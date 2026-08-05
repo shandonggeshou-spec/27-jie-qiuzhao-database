@@ -16,14 +16,18 @@ const TIMELINE = [
 // —— 2. 公司机会 ——
 // status 可选值：想投 / 已投 / 笔试 / 一面 / 二面 / 三面 / HR面 / Offer / 挂
 // tier：大厂 / 中厂 / 新势力
+// official：官方校招入口（最权威，投递/进度以此为准）
+// nowcoder：牛客网该公司讨论区搜索（看实时开奖、面经、内推）
 const COMPANIES = [
   {
     name: "字节跳动", tier: "大厂",
     roles: ["产品", "产运", "商分", "数分"],
-    open: "8月提前批 / 9月正式批",
+    open: "2027届8月提前批已启动 / 9月正式批",
     channel: "官网投递 + 内推码（找学长学姐）",
-    note: "产品岗竞争激烈，产运/商分机会较多。提前批可无限次投不同 BU。",
+    note: "产品岗竞争激烈，产运/商分机会较多。提前批可无限次投不同 BU。2027届已于2026年8月3日启动。",
     status: "想投", priority: "高",
+    official: "https://jobs.bytedance.com/campus",
+    nowcoder: "https://www.nowcoder.com/search?query=字节跳动秋招&type=all",
   },
   {
     name: "腾讯", tier: "大厂",
@@ -32,6 +36,8 @@ const COMPANIES = [
     channel: "官网 + 内推",
     note: "TEG/CSIG/IEG 都有产品岗，产品经理走「青云计划」。战略投 CDG 战略部。",
     status: "想投", priority: "高",
+    official: "https://join.qq.com/",
+    nowcoder: "https://www.nowcoder.com/search?query=腾讯秋招&type=all",
   },
   {
     name: "阿里巴巴", tier: "大厂",
@@ -40,6 +46,8 @@ const COMPANIES = [
     channel: "官网 + 内推",
     note: "淘天/阿里云/本地生活多。商业分析、战略岗（如阿里战投）值得关注。",
     status: "想投", priority: "高",
+    official: "https://talent.alibaba.com/campus/home",
+    nowcoder: "https://www.nowcoder.com/search?query=阿里巴巴秋招&type=all",
   },
   {
     name: "美团", tier: "大厂",
@@ -48,6 +56,8 @@ const COMPANIES = [
     channel: "官网 + 内推",
     note: "产运岗（到店/外卖运营）体量大，商分岗成熟，适合数据敏感型。",
     status: "想投", priority: "高",
+    official: "https://campus.meituan.com/",
+    nowcoder: "https://www.nowcoder.com/search?query=美团秋招&type=all",
   },
   {
     name: "拼多多", tier: "大厂",
@@ -56,6 +66,8 @@ const COMPANIES = [
     channel: "官网",
     note: "薪资高、节奏快。商分/产运偏实操，看重结果导向。",
     status: "想投", priority: "中",
+    official: "https://careers.pddglobalhr.com/campus",
+    nowcoder: "https://www.nowcoder.com/search?query=拼多多秋招&type=all",
   },
   {
     name: "快手", tier: "大厂",
@@ -64,6 +76,8 @@ const COMPANIES = [
     channel: "官网 + 内推",
     note: "内容/电商/商业化产品，产运机会多。",
     status: "想投", priority: "中",
+    official: "https://campus.kuaishou.cn/",
+    nowcoder: "https://www.nowcoder.com/search?query=快手秋招&type=all",
   },
   {
     name: "小红书", tier: "中厂",
@@ -72,6 +86,8 @@ const COMPANIES = [
     channel: "官网 + 内推",
     note: "社区/电商/商业化，战略岗含金量高，产运重内容运营能力。",
     status: "想投", priority: "高",
+    official: "https://job.xiaohongshu.com/campus",
+    nowcoder: "https://www.nowcoder.com/search?query=小红书秋招&type=all",
   },
   {
     name: "网易", tier: "大厂",
@@ -80,6 +96,8 @@ const COMPANIES = [
     channel: "官网",
     note: "游戏/云音乐/有道，产品氛围好。",
     status: "想投", priority: "中",
+    official: "https://campus.163.com/",
+    nowcoder: "https://www.nowcoder.com/search?query=网易秋招&type=all",
   },
   {
     name: "B站", tier: "中厂",
@@ -88,6 +106,8 @@ const COMPANIES = [
     channel: "官网 + 内推",
     note: "社区氛围强，产运偏 UP 主生态/内容运营。",
     status: "想投", priority: "中",
+    official: "https://jobs.bilibili.com/campus",
+    nowcoder: "https://www.nowcoder.com/search?query=哔哩哔哩秋招&type=all",
   },
   {
     name: "滴滴", tier: "中厂",
@@ -96,14 +116,18 @@ const COMPANIES = [
     channel: "官网",
     note: "出行业务复杂，商分/数分岗数据驱动强。",
     status: "想投", priority: "中",
+    official: "https://campus.didiglobal.com/",
+    nowcoder: "https://www.nowcoder.com/search?query=滴滴秋招&type=all",
   },
   {
     name: "百度", tier: "大厂",
     roles: ["产品", "产运", "数分"],
-    open: "8-9月",
+    open: "2027届已启动（通道全年开放）",
     channel: "官网",
-    note: "AI/搜索/智能云，AI 产品经理是热点方向。",
+    note: "AI/搜索/智能云，AI 产品经理是热点方向。投递越早机会越多。",
     status: "想投", priority: "中",
+    official: "https://talent.baidu.com/jobs/list",
+    nowcoder: "https://www.nowcoder.com/search?query=百度秋招&type=all",
   },
   {
     name: "京东", tier: "大厂",
@@ -112,6 +136,8 @@ const COMPANIES = [
     channel: "官网",
     note: "零售/物流/科技，商分岗成熟，战略投集团战略部。",
     status: "想投", priority: "中",
+    official: "https://campus.jd.com/",
+    nowcoder: "https://www.nowcoder.com/search?query=京东秋招&type=all",
   },
   {
     name: "蚂蚁集团", tier: "大厂",
@@ -120,6 +146,8 @@ const COMPANIES = [
     channel: "官网 + 内推",
     note: "支付/数科，商分与战略岗门槛高、含金量高。",
     status: "想投", priority: "中",
+    official: "https://talent.antgroup.com/campus/home",
+    nowcoder: "https://www.nowcoder.com/search?query=蚂蚁秋招&type=all",
   },
   {
     name: "SHEIN", tier: "新势力",
@@ -128,6 +156,8 @@ const COMPANIES = [
     channel: "官网",
     note: "跨境电商，商分/数分需求大，接受海投。",
     status: "想投", priority: "低",
+    official: "https://careers.shein.cn/campus",
+    nowcoder: "https://www.nowcoder.com/search?query=SHEIN秋招&type=all",
   },
   {
     name: "Temu（拼多多海外）", tier: "新势力",
@@ -136,6 +166,8 @@ const COMPANIES = [
     channel: "官网",
     note: "跨境增长猛，运营/战略机会多，节奏快。",
     status: "想投", priority: "低",
+    official: "https://careers.pddglobalhr.com/campus",
+    nowcoder: "https://www.nowcoder.com/search?query=Temu秋招&type=all",
   },
 ];
 

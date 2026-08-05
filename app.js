@@ -111,6 +111,9 @@ function renderCompanies() {
   list.forEach((c) => {
     const cur = statusMap[c.name] || c.status;
     const card = el("div", "company-card");
+    const links = [];
+    if (c.official) links.push(`<a class="link-btn primary" href="${c.official}" target="_blank" rel="noopener">🔗 官方校招</a>`);
+    if (c.nowcoder) links.push(`<a class="link-btn" href="${c.nowcoder}" target="_blank" rel="noopener">💬 牛客开奖</a>`);
     card.innerHTML = `
       <div class="cc-head">
         <span class="cc-name">${c.name}</span>
@@ -120,6 +123,7 @@ function renderCompanies() {
       <div class="cc-meta">🗓 <b>开放：</b>${c.open}</div>
       <div class="cc-meta">📮 <b>渠道：</b>${c.channel}</div>
       <div class="cc-note">${c.note}</div>
+      <div class="cc-links">${links.join("")}</div>
       <div class="cc-foot">
         <span class="priority ${c.priority}">优先级 ${c.priority}</span>
         <select class="status-select"></select>
