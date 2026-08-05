@@ -42,4 +42,10 @@ python3 -m http.server 8000
 └── README.md
 ```
 
+## 线上地址
+
+已部署到 GitHub Pages：https://shandonggeshou-spec.github.io/amber.0/
+
+改完文件后 `git push` 即可自动更新线上（约 1 分钟）。
+
 祝早日上岸 🚀
