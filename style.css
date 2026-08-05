@@ -112,6 +112,10 @@ body {
 .role-tag { font-size: 12px; padding: 2px 9px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); }
 .cc-meta { font-size: 12.5px; color: var(--text-dim); margin: 4px 0; }
 .cc-meta b { color: var(--text); font-weight: 500; }
+.cc-meta .est { font-size: 10px; background: var(--bg-soft); color: var(--text-dim); padding: 0 5px; border-radius: 4px; border: 1px solid var(--border); }
+.cc-positions { margin: 10px 0; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.cc-label { font-size: 11px; color: var(--text-dim); margin-right: 2px; }
+.pos-tag { font-size: 11.5px; padding: 2px 8px; border-radius: 6px; background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
 .cc-note { font-size: 12.5px; color: var(--text-dim); margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); }
 .cc-links { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
 .link-btn {
@@ -151,6 +155,34 @@ body {
 .q-list li::before { content: "Q"; font-weight: 700; font-size: 11px; top: 10px; }
 .res-list { display: flex; gap: 8px; flex-wrap: wrap; }
 .res-tag { background: var(--accent-soft); color: var(--accent); padding: 5px 12px; border-radius: 8px; font-size: 13px; }
+
+/* Eligibility self-check */
+.elig-form { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 22px; }
+.ef-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; }
+.ef-row label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--text-dim); }
+.ef-row input, .ef-row select {
+  background: var(--bg-soft); color: var(--text); border: 1px solid var(--border);
+  border-radius: 9px; padding: 8px 12px; font-size: 14px; font-family: inherit; min-width: 160px;
+}
+.ef-block { margin-top: 14px; }
+.ef-label { display: block; font-size: 13px; color: var(--text-dim); margin-bottom: 8px; }
+.ef-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.elig-hint { color: var(--text-dim); font-size: 14px; text-align: center; padding: 30px 0; }
+.elig-summary { font-size: 15px; margin-bottom: 8px; }
+.elig-summary b { color: var(--accent); }
+.elig-h { font-size: 15px; margin: 20px 0 12px; }
+.elig-h.dim { color: var(--text-dim); }
+.elig-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+.elig-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; }
+.elig-card.ok { border-left: 3px solid var(--green); }
+.elig-card.no { opacity: 0.7; border-left: 3px solid var(--border); }
+.ec-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.ec-head b { font-size: 15px; }
+.ec-pos { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.ec-meta { font-size: 12px; color: var(--text-dim); margin-bottom: 10px; }
+.ec-reason { font-size: 12.5px; color: #f87171; }
+.elig-card .link-btn { display: block; }
+.elig-foot { font-size: 12px; color: var(--text-dim); margin-top: 20px; line-height: 1.7; }
 
 /* Progress */
 .progress-bar-outer { background: var(--bg-soft); border-radius: 20px; height: 12px; overflow: hidden; margin-bottom: 24px; border: 1px solid var(--border); }

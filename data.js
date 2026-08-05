@@ -18,6 +18,8 @@ const TIMELINE = [
 // tier：大厂 / 中厂 / 新势力
 // official：官方校招入口（最权威，投递/进度以此为准）
 // nowcoder：牛客网该公司讨论区搜索（看实时开奖、面经、内推）
+// gradFrom/gradTo：应届毕业时间窗（YYYY-MM，用于「投递资格自查」）；info=该字段为通用推断
+// cities：主要工作城市；positions：当前在招的具体岗位方向（调研快照，以官网为准）
 const COMPANIES = [
   {
     name: "字节跳动", tier: "大厂",
@@ -28,6 +30,9 @@ const COMPANIES = [
     status: "想投", priority: "高",
     official: "https://jobs.bytedance.com/campus",
     nowcoder: "https://www.nowcoder.com/search?query=字节跳动秋招&type=all",
+    gradFrom: "2026-09", gradTo: "2027-08", degree: "本科及以上",
+    cities: ["北京", "上海", "深圳", "杭州", "成都", "广州"],
+    positions: ["产品经理", "AI产品经理（早鸟通道）", "产品运营", "商业分析", "数据分析"],
   },
   {
     name: "腾讯", tier: "大厂",
@@ -38,6 +43,9 @@ const COMPANIES = [
     status: "想投", priority: "高",
     official: "https://join.qq.com/",
     nowcoder: "https://www.nowcoder.com/search?query=腾讯秋招&type=all",
+    gradFrom: "2026-01", gradTo: "2027-12", degree: "本科及以上",
+    cities: ["深圳", "北京", "上海", "香港"],
+    positions: ["产品策划", "青云计划-产品（AI方向）", "产品运营", "战略（CDG）", "数据分析"],
   },
   {
     name: "阿里巴巴", tier: "大厂",
@@ -48,6 +56,9 @@ const COMPANIES = [
     status: "想投", priority: "高",
     official: "https://talent.alibaba.com/campus/home",
     nowcoder: "https://www.nowcoder.com/search?query=阿里巴巴秋招&type=all",
+    gradFrom: "2026-11", gradTo: "2027-10", degree: "本科及以上",
+    cities: ["杭州", "北京", "上海", "深圳"],
+    positions: ["产品经理", "产品运营", "商业分析", "战略（阿里战投）"],
   },
   {
     name: "美团", tier: "大厂",
@@ -58,6 +69,9 @@ const COMPANIES = [
     status: "想投", priority: "高",
     official: "https://campus.meituan.com/",
     nowcoder: "https://www.nowcoder.com/search?query=美团秋招&type=all",
+    gradFrom: "2026-09", gradTo: "2027-08", degree: "本科及以上", gradInfo: true,
+    cities: ["北京", "上海"],
+    positions: ["产品经理", "产品运营（到店/外卖）", "商业分析（需SQL）", "数据分析"],
   },
   {
     name: "拼多多", tier: "大厂",
@@ -68,6 +82,9 @@ const COMPANIES = [
     status: "想投", priority: "中",
     official: "https://careers.pddglobalhr.com/campus",
     nowcoder: "https://www.nowcoder.com/search?query=拼多多秋招&type=all",
+    gradFrom: "2026-09", gradTo: "2027-08", degree: "本科及以上", gradInfo: true,
+    cities: ["上海"],
+    positions: ["产品经理", "产品运营", "商业分析"],
   },
   {
     name: "快手", tier: "大厂",
@@ -78,6 +95,9 @@ const COMPANIES = [
     status: "想投", priority: "中",
     official: "https://campus.kuaishou.cn/",
     nowcoder: "https://www.nowcoder.com/search?query=快手秋招&type=all",
+    gradFrom: "2026-09", gradTo: "2027-08", degree: "本科及以上", gradInfo: true,
+    cities: ["北京", "杭州"],
+    positions: ["产品经理", "产品运营（内容/电商）", "数据分析"],
   },
   {
     name: "小红书", tier: "中厂",
@@ -88,6 +108,9 @@ const COMPANIES = [
     status: "想投", priority: "高",
     official: "https://job.xiaohongshu.com/campus",
     nowcoder: "https://www.nowcoder.com/search?query=小红书秋招&type=all",
+    gradFrom: "2026-09", gradTo: "2027-08", degree: "本科及以上", gradInfo: true,
+    cities: ["上海", "北京", "杭州"],
+    positions: ["产品经理", "产品经理培训生（AI方向）", "内容运营", "电商运营", "产品运营", "数据科学", "Growth Hacker"],
   },
   {
     name: "网易", tier: "大厂",
@@ -98,6 +121,9 @@ const COMPANIES = [
     status: "想投", priority: "中",
     official: "https://campus.163.com/",
     nowcoder: "https://www.nowcoder.com/search?query=网易秋招&type=all",
+    gradFrom: "2026-09", gradTo: "2027-08", degree: "本科及以上", gradInfo: true,
+    cities: ["杭州", "北京", "广州"],
+    positions: ["产品经理", "产品运营", "数据分析"],
   },
   {
     name: "B站", tier: "中厂",
@@ -108,6 +134,9 @@ const COMPANIES = [
     status: "想投", priority: "中",
     official: "https://jobs.bilibili.com/campus",
     nowcoder: "https://www.nowcoder.com/search?query=哔哩哔哩秋招&type=all",
+    gradFrom: "2026-09", gradTo: "2027-08", degree: "本科及以上", gradInfo: true,
+    cities: ["上海", "北京"],
+    positions: ["产品经理", "产品运营（UP主生态）", "商业分析"],
   },
   {
     name: "滴滴", tier: "中厂",
@@ -118,6 +147,9 @@ const COMPANIES = [
     status: "想投", priority: "中",
     official: "https://campus.didiglobal.com/",
     nowcoder: "https://www.nowcoder.com/search?query=滴滴秋招&type=all",
+    gradFrom: "2026-09", gradTo: "2027-08", degree: "本科及以上", gradInfo: true,
+    cities: ["北京", "杭州"],
+    positions: ["产品经理", "产品运营", "商业分析", "数据分析"],
   },
   {
     name: "百度", tier: "大厂",
@@ -128,6 +160,9 @@ const COMPANIES = [
     status: "想投", priority: "中",
     official: "https://talent.baidu.com/jobs/list",
     nowcoder: "https://www.nowcoder.com/search?query=百度秋招&type=all",
+    gradFrom: "2026-09", gradTo: "2027-08", degree: "本科及以上", gradInfo: true,
+    cities: ["北京", "上海", "深圳", "成都"],
+    positions: ["产品经理", "AI产品经理", "产品运营", "数据分析", "商业分析"],
   },
   {
     name: "京东", tier: "大厂",
@@ -138,6 +173,9 @@ const COMPANIES = [
     status: "想投", priority: "中",
     official: "https://campus.jd.com/",
     nowcoder: "https://www.nowcoder.com/search?query=京东秋招&type=all",
+    gradFrom: "2026-09", gradTo: "2027-08", degree: "本科及以上", gradInfo: true,
+    cities: ["北京", "上海", "宿迁"],
+    positions: ["产品经理", "产品运营", "商业分析", "战略（集团战略部）"],
   },
   {
     name: "蚂蚁集团", tier: "大厂",
@@ -148,6 +186,9 @@ const COMPANIES = [
     status: "想投", priority: "中",
     official: "https://talent.antgroup.com/campus/home",
     nowcoder: "https://www.nowcoder.com/search?query=蚂蚁秋招&type=all",
+    gradFrom: "2026-09", gradTo: "2027-08", degree: "本科及以上", gradInfo: true,
+    cities: ["杭州", "上海", "北京"],
+    positions: ["产品经理", "商业分析", "战略", "数据分析"],
   },
   {
     name: "SHEIN", tier: "新势力",
@@ -158,6 +199,9 @@ const COMPANIES = [
     status: "想投", priority: "低",
     official: "https://careers.shein.cn/campus",
     nowcoder: "https://www.nowcoder.com/search?query=SHEIN秋招&type=all",
+    gradFrom: "2026-09", gradTo: "2027-08", degree: "本科及以上", gradInfo: true,
+    cities: ["广州", "南京"],
+    positions: ["产品经理", "产品运营", "商业分析", "数据分析"],
   },
   {
     name: "Temu（拼多多海外）", tier: "新势力",
@@ -168,6 +212,9 @@ const COMPANIES = [
     status: "想投", priority: "低",
     official: "https://careers.pddglobalhr.com/campus",
     nowcoder: "https://www.nowcoder.com/search?query=Temu秋招&type=all",
+    gradFrom: "2026-09", gradTo: "2027-08", degree: "本科及以上", gradInfo: true,
+    cities: ["上海", "广州"],
+    positions: ["产品运营", "商业分析", "战略", "跨境增长"],
   },
 ];
 

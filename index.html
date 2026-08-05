@@ -23,6 +23,7 @@
   <nav class="tabs wrap">
     <button class="tab active" data-tab="overview">📊 概览</button>
     <button class="tab" data-tab="companies">🏢 公司机会</button>
+    <button class="tab" data-tab="eligibility">🎯 能投哪些</button>
     <button class="tab" data-tab="prep">📚 准备方向</button>
     <button class="tab" data-tab="progress">✅ 我的进度</button>
   </nav>
@@ -48,6 +49,36 @@
         <div class="filter-group" id="tierFilter"></div>
       </div>
       <div class="company-grid" id="companyGrid"></div>
+    </section>
+
+    <!-- 能投哪些（投递资格自查） -->
+    <section id="eligibility" class="panel">
+      <h2 class="section-title">投递资格自查</h2>
+      <p class="section-hint">填下面几项，自动筛出你现在能投的公司和岗位方向。资料只存在本浏览器。判断基于调研到的规则，具体以官网为准。</p>
+      <div class="elig-form" id="eligForm">
+        <div class="ef-row">
+          <label>毕业年月
+            <input type="month" id="efGrad" />
+          </label>
+          <label>最高学历
+            <select id="efDegree">
+              <option value="本科">本科</option>
+              <option value="硕士">硕士</option>
+              <option value="博士">博士</option>
+              <option value="大专">大专</option>
+            </select>
+          </label>
+        </div>
+        <div class="ef-block">
+          <span class="ef-label">意向方向（可多选）</span>
+          <div class="ef-chips" id="efRoles"></div>
+        </div>
+        <div class="ef-block">
+          <span class="ef-label">意向城市（可多选，不选=不限）</span>
+          <div class="ef-chips" id="efCities"></div>
+        </div>
+      </div>
+      <div class="elig-result" id="eligResult"></div>
     </section>
 
     <!-- 准备方向 -->
