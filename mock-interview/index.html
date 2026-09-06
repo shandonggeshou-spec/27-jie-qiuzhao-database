@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="面向 27 届秋招的本地结构化模拟面试工具。">
+    <meta name="theme-color" content="#143f35">
+    <title>Mock · 结构化模拟面试</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#appMain">跳到主要内容</a>
+
+    <div class="app-shell" id="appShell">
+      <header class="app-header">
+        <div class="header-inner">
+          <button class="brand" id="brandHomeBtn" type="button" aria-label="返回 Mock 首页">
+            <span class="brand-mark" aria-hidden="true">M</span>
+            <span class="brand-copy"><strong>Mock</strong><small>结构化模拟面试</small></span>
+          </button>
+          <nav class="primary-nav" aria-label="主要导航">
+            <button class="nav-link is-active" id="navSetupBtn" type="button" data-route="setup" aria-current="page">开始练习</button>
+            <button class="nav-link" id="navHistoryBtn" type="button" data-route="history">历史复盘</button>
+          </nav>
+          <div class="header-actions">
+            <span class="local-status"><i aria-hidden="true"></i>本地存储</span>
+            <button class="icon-button" id="openSettingsBtn" type="button" aria-label="打开设置与数据管理" aria-haspopup="dialog">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19 14.7a2 2 0 0 0 .4 2.2l.1.1-2.5 2.5-.1-.1a2 2 0 0 0-2.2-.4 2 2 0 0 0-1.2 1.8v.2H10v-.2A2 2 0 0 0 8.7 19a2 2 0 0 0-2.2.4l-.1.1L4 17l.1-.1a2 2 0 0 0 .4-2.2A2 2 0 0 0 2.7 13h-.2V9.5h.2a2 2 0 0 0 1.8-1.2 2 2 0 0 0-.4-2.2L4 6l2.5-2.5.1.1a2 2 0 0 0 2.2.4A2 2 0 0 0 10 2.2V2h3.5v.2A2 2 0 0 0 14.7 4a2 2 0 0 0 2.2-.4l.1-.1L19.5 6l-.1.1a2 2 0 0 0-.4 2.2 2 2 0 0 0 1.8 1.2h.2V13h-.2a2 2 0 0 0-1.8 1.7Z"></path></svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main id="appMain" tabindex="-1">
+        <section class="app-view setup-view" id="viewSetup" data-view="setup" aria-labelledby="setupTitle">
+          <div class="document-shell setup-shell">
+            <header class="page-intro">
+              <p class="eyebrow">为 27 届秋招准备</p>
+              <h1 id="setupTitle">把每一次回答，练成有证据的表达</h1>
+              <p class="intro-copy">选择目标岗位与面试节奏。系统会根据你的回答继续追问，并在结束后给出逐题复盘。</p>
+              <div class="privacy-note" role="note" aria-label="隐私说明">
+                <span class="privacy-icon" aria-hidden="true"></span>
+                <p><strong>你的背景、转写文本和练习记录只保存在当前浏览器。</strong>本站不保存原始录音；启用语音识别时，音频可能由浏览器厂商在线处理。清除浏览器数据后记录将无法恢复。</p>
+              </div>
+            </header>
+
+            <section class="resume-panel" id="resumeSessionPanel" aria-labelledby="resumeTitle" hidden>
+              <div><p class="section-kicker">上次未完成</p><h2 id="resumeTitle">继续上一场模拟面试</h2><p id="resumeSessionMeta">已完成 3 / 8 题 · 约 18 分钟前</p></div>
+              <div class="resume-actions"><button class="button button-secondary" id="discardResumeBtn" type="button">放弃记录</button><button class="button button-primary" id="resumeInterviewBtn" type="button">继续回答</button></div>
+            </section>
+
+            <form class="setup-form" id="setupForm" novalidate>
+              <fieldset class="form-section">
+                <legend><span class="step-index">01</span><span>选择岗位包</span></legend>
+                <p class="field-help" id="questionPackHelp">每个岗位包包含核心问题、情景题与基于回答的追问。</p>
+                <div class="pack-list" id="questionPackOptions" aria-describedby="questionPackHelp">
+                  <label class="pack-option recommended" for="packWecom">
+                    <input id="packWecom" type="radio" name="questionPack" value="wecom-smart-sheet-pm" checked>
+                    <span class="pack-radio" aria-hidden="true"></span>
+                    <span class="pack-copy"><span><strong>企业微信智能表格 · 产品经理</strong><em>推荐</em></span><small>场景洞察、表格产品设计、AI 能力落地与协同判断</small></span>
+                    <span class="pack-arrow" aria-hidden="true">→</span>
+                  </label>
+                  <label class="pack-option" for="packGeneralAi">
+                    <input id="packGeneralAi" type="radio" name="questionPack" value="general-ai-pm">
+                    <span class="pack-radio" aria-hidden="true"></span>
+                    <span class="pack-copy"><span><strong>通用 AI 产品经理</strong></span><small>需求分析、模型认知、体验设计、数据评估与产品判断</small></span>
+                    <span class="pack-arrow" aria-hidden="true">→</span>
+                  </label>
+                </div>
+                <p class="field-error" id="questionPackError" role="alert" hidden>请选择一个岗位包。</p>
+              </fieldset>
+
+              <fieldset class="form-section compact-section">
+                <legend><span class="step-index">02</span><span>设置面试节奏</span></legend>
+                <div class="setting-row">
+                  <div class="setting-label"><span id="durationLabel">预计时长</span><small>题目数量会随时长调整</small></div>
+                  <div class="segmented-control" role="radiogroup" aria-labelledby="durationLabel">
+                    <label><input id="duration15" type="radio" name="duration" value="15"><span>15 分钟</span></label>
+                    <label><input id="duration30" type="radio" name="duration" value="30" checked><span>30 分钟</span></label>
+                    <label><input id="duration45" type="radio" name="duration" value="45"><span>45 分钟</span></label>
+                  </div>
+                </div>
+                <div class="setting-row">
+                  <div class="setting-label"><span id="intensityLabel">追问强度</span><small>决定追问的深度与频率</small></div>
+                  <div class="segmented-control" role="radiogroup" aria-labelledby="intensityLabel">
+                    <label><input id="intensityLow" type="radio" name="followupIntensity" value="low"><span>温和</span></label>
+                    <label><input id="intensityMedium" type="radio" name="followupIntensity" value="medium" checked><span>标准</span></label>
+                    <label><input id="intensityHigh" type="radio" name="followupIntensity" value="high"><span>深入</span></label>
+                  </div>
+                </div>
+              </fieldset>
+
+              <section class="form-section context-section" aria-labelledby="contextLabel">
+                <div class="section-heading-row"><h2 id="contextLabel"><span class="step-index">03</span><span>补充候选人背景</span></h2><span class="optional-label">选填 · 仅本地保存</span></div>
+                <p class="field-help" id="contextHelp">写下目标公司、相关经历或希望重点练习的薄弱项。请勿填写真实姓名、手机号等身份信息。</p>
+                <label class="sr-only" for="candidateContext">候选人私密背景</label>
+                <textarea id="candidateContext" name="candidateContext" rows="6" maxlength="1200" aria-describedby="contextHelp contextCounter" placeholder="例如：目标为协作工具产品岗；有一段校园产品经历，希望重点练习指标设计和项目复盘……"></textarea>
+                <div class="textarea-meta"><span>支持随时编辑或在设置中彻底清除</span><span id="contextCounter"><output id="contextCount" for="candidateContext">0</output> / 1200</span></div>
+              </section>
+
+              <footer class="setup-submit">
+                <div><strong>准备好后，进入安静的环境</strong><span>开始后可随时暂停并在本机继续。</span></div>
+                <button class="button button-primary button-large" id="startInterviewBtn" type="submit">开始模拟面试 <span aria-hidden="true">→</span></button>
+              </footer>
+            </form>
+          </div>
+        </section>
+
+        <section class="app-view interview-view" id="viewInterview" data-view="interview" aria-labelledby="interviewTitle" hidden>
+          <header class="interview-toolbar">
+            <div class="interview-toolbar-inner">
+              <div class="session-identity"><span class="live-indicator" aria-hidden="true"></span><div><p>模拟面试进行中</p><h1 id="interviewTitle">企业微信智能表格 · 产品经理</h1></div></div>
+              <div class="session-controls"><div class="timer-block"><span>已用时</span><time id="interviewTimer" datetime="PT0M0S">00:00</time></div><button class="button button-quiet" id="pauseInterviewBtn" type="button" aria-pressed="false">暂停</button><button class="button button-danger-quiet" id="exitInterviewBtn" type="button" aria-haspopup="dialog">退出</button></div>
+            </div>
+          </header>
+          <div class="workbench-shell">
+            <aside class="question-rail" id="interviewRail" aria-labelledby="progressTitle">
+              <div class="rail-progress"><div><h2 id="progressTitle">面试进度</h2><span id="questionProgressText">第 1 / 8 题</span></div><progress id="questionProgress" value="1" max="8">1 / 8</progress></div>
+              <ol class="question-queue" id="questionQueue" aria-label="问题队列">
+                <li class="is-current" data-question-id="q1" aria-current="step"><span>01</span><div><strong>开场与动机</strong><small>正在回答</small></div></li>
+                <li data-question-id="q2"><span>02</span><div><strong>场景洞察</strong><small>待回答</small></div></li>
+                <li data-question-id="q3"><span>03</span><div><strong>方案设计</strong><small>待回答</small></div></li>
+                <li data-question-id="q4"><span>04</span><div><strong>指标与复盘</strong><small>待回答</small></div></li>
+                <li class="is-muted"><span>＋</span><div><strong>后续问题</strong><small>根据回答生成</small></div></li>
+              </ol>
+              <p class="rail-note">回答会自动保存到当前浏览器。关闭页面后仍可继续。</p>
+            </aside>
+
+            <article class="interview-stage" aria-labelledby="currentQuestionText">
+              <header class="interviewer-heading"><span class="interviewer-avatar" aria-hidden="true">M</span><div><strong>结构化面试官</strong><span id="questionTypeLabel">核心问题 · 项目复盘</span></div></header>
+              <div class="question-document"><p class="question-number" id="currentQuestionNumber">问题 01</p><h2 id="currentQuestionText">请选一个你投入最多的项目，说明当时要解决的问题、你的具体行动，以及最终结果。</h2><p class="question-guidance" id="currentQuestionGuidance">建议用 2–3 分钟回答。尽量说明你本人做了什么，并用事实或数据支撑结果。</p></div>
+              <section class="answer-section" aria-labelledby="answerLabel">
+                <div class="answer-heading"><div><h3 id="answerLabel">你的回答</h3><p>先完成表达，再提交给面试官追问。</p></div><button class="button voice-button" id="voiceToggleBtn" type="button" aria-pressed="false" aria-describedby="voiceStatus"><span class="mic-icon" aria-hidden="true"></span><span id="voiceButtonText">语音回答</span></button></div>
+                <form id="answerForm" novalidate>
+                  <label class="sr-only" for="answerInput">输入本题回答</label>
+                  <div class="answer-editor" id="answerEditor"><textarea id="answerInput" name="answer" rows="11" maxlength="6000" aria-describedby="transcriptEditHint answerCounter" placeholder="在这里输入回答，或点击“语音回答”开始转写……"></textarea><div class="recording-layer" id="recordingLayer" aria-hidden="true" hidden><span class="recording-pulse"></span><strong>正在聆听</strong><small>再次点击语音按钮结束转写</small></div></div>
+                  <div class="editor-meta"><p id="transcriptEditHint"><span aria-hidden="true">✎</span> 语音会先转成可编辑文字；提交前请检查专有名词和数字。</p><span id="answerCounter"><output id="answerCount" for="answerInput">0</output> / 6000</span></div>
+                  <p class="voice-status" id="voiceStatus" role="status" aria-live="polite">语音输入未开启</p>
+                  <p class="field-error" id="answerError" role="alert" hidden>请先输入回答再提交。</p>
+                  <div class="answer-actions"><span class="keyboard-hint"><kbd>⌘</kbd> + <kbd>Enter</kbd> 提交</span><button class="button button-primary" id="answerSubmitBtn" type="submit">提交回答 <span aria-hidden="true">→</span></button></div>
+                </form>
+              </section>
+            </article>
+          </div>
+          <p class="sr-only" id="interviewAnnouncer" aria-live="polite" aria-atomic="true"></p>
+        </section>
+
+        <section class="app-view report-view" id="viewReport" data-view="report" aria-labelledby="reportTitle" hidden>
+          <div class="document-shell report-shell">
+            <header class="report-header"><div><p class="eyebrow">本场复盘</p><h1 id="reportTitle">模拟面试报告</h1><p id="reportMeta">2026 年 9 月 7 日 · 30 分钟 · 完成 8 题</p></div><div class="report-actions"><button class="button button-secondary" id="exportReportBtn" type="button">导出报告</button><button class="button button-primary" id="newInterviewBtn" type="button">再练一场</button></div></header>
+            <section class="report-overview" aria-labelledby="overallTitle">
+              <div class="score-summary"><p>综合表现</p><div><strong id="overallScore">78</strong><span>/ 100</span></div><small class="score-band" id="overallBand">良好 · 已具备基础胜任力</small></div>
+              <div class="summary-copy"><h2 id="overallTitle">总评</h2><p id="overallSummary">你的回答结构清楚，能主动补充项目背景和个人行动；主要提升空间在于用更明确的数据验证判断，并把关键取舍说透。</p><dl class="summary-facts" id="reportFacts"><div><dt>回答完成度</dt><dd>8 / 8</dd></div><div><dt>有效证据</dt><dd>12 处</dd></div><div><dt>平均回答</dt><dd>2 分 18 秒</dd></div></dl></div>
+            </section>
+            <section class="report-section" aria-labelledby="dimensionsTitle">
+              <div class="section-title-row"><div><p class="section-kicker">能力画像</p><h2 id="dimensionsTitle">六维评分</h2></div><p>基于本场可验证表达，不代表招聘结果。</p></div>
+              <div class="dimension-list" id="dimensionScores">
+                <div class="dimension-row" data-dimension="structure"><div><strong>结构表达</strong><span>结论前置，信息层级清楚</span></div><div class="score-track" role="img" aria-label="结构表达 86 分"><span style="--score:86%"></span></div><output>86</output></div>
+                <div class="dimension-row" data-dimension="role"><div><strong>岗位理解</strong><span>能连接用户、业务与执行</span></div><div class="score-track" role="img" aria-label="岗位理解 82 分"><span style="--score:82%"></span></div><output>82</output></div>
+                <div class="dimension-row" data-dimension="analysis"><div><strong>问题拆解</strong><span>框架完整，优先级可再聚焦</span></div><div class="score-track" role="img" aria-label="问题拆解 79 分"><span style="--score:79%"></span></div><output>79</output></div>
+                <div class="dimension-row" data-dimension="judgement"><div><strong>业务判断</strong><span>有取舍意识，论据仍需加强</span></div><div class="score-track" role="img" aria-label="业务判断 75 分"><span style="--score:75%"></span></div><output>75</output></div>
+                <div class="dimension-row" data-dimension="data"><div><strong>数据意识</strong><span>能提指标，缺少验证闭环</span></div><div class="score-track" role="img" aria-label="数据意识 69 分"><span style="--score:69%"></span></div><output>69</output></div>
+                <div class="dimension-row" data-dimension="communication"><div><strong>沟通应变</strong><span>追问下能补充关键信息</span></div><div class="score-track" role="img" aria-label="沟通应变 77 分"><span style="--score:77%"></span></div><output>77</output></div>
+              </div>
+            </section>
+            <section class="report-section review-section" aria-labelledby="questionReviewTitle">
+              <div class="section-title-row"><div><p class="section-kicker">逐题复盘</p><h2 id="questionReviewTitle">从回答证据到下一步练习</h2></div><button class="button button-secondary" id="reanswerWeakQuestionsBtn" type="button">重答薄弱题</button></div>
+              <div class="review-list" id="reportQuestionList">
+                <article class="review-item" data-question-id="q1"><header><div><span>问题 01 · 项目复盘</span><h3>请介绍一个你投入最多的项目，以及你的具体贡献。</h3></div><output aria-label="本题得分 82 分">82</output></header><details open><summary>查看详细反馈</summary><div class="feedback-grid"><section class="feedback-block evidence-block"><h4>有效证据</h4><blockquote>“我重新划分了新用户首周路径，最终让关键动作完成率从 31% 提升到 44%。”</blockquote><p>说明了个人行动，并给出前后数据。</p></section><section class="feedback-block gap-block"><h4>信息缺口</h4><p>没有解释为什么选择“首周路径”作为优先切入点。</p></section><section class="feedback-block advice-block"><h4>改进建议</h4><p>补充用户流失分布、资源约束和预期收益，并明确最关键的取舍。</p></section></div></details><footer><button class="text-button reanswer-btn" type="button" data-action="reanswer" data-question-id="q1">重答这一题 <span aria-hidden="true">→</span></button></footer></article>
+                <article class="review-item" data-question-id="q2"><header><div><span>问题 02 · 需求判断</span><h3>面对多个同时到来的需求，你会如何确定优先级？</h3></div><output aria-label="本题得分 71 分">71</output></header><details><summary>查看详细反馈</summary><div class="feedback-grid"><section class="feedback-block evidence-block"><h4>有效证据</h4><blockquote>“先统一业务目标，再从影响范围、价值、成本和风险做比较。”</blockquote><p>提供了完整的判断框架。</p></section><section class="feedback-block gap-block"><h4>信息缺口</h4><p>缺少真实冲突案例证明如何做出困难取舍。</p></section><section class="feedback-block advice-block"><h4>改进建议</h4><p>选择一次延后重要需求的经历，讲明标准、沟通过程和影响。</p></section></div></details><footer><button class="text-button reanswer-btn" type="button" data-action="reanswer" data-question-id="q2">重答这一题 <span aria-hidden="true">→</span></button></footer></article>
+              </div>
+            </section>
+            <footer class="report-footer"><p>建议先重答 2 道薄弱题，再开始下一场完整练习。</p><button class="button button-primary" id="reportStartPracticeBtn" type="button">开始针对性重答</button></footer>
+          </div>
+        </section>
+
+        <section class="app-view history-view" id="viewHistory" data-view="history" aria-labelledby="historyTitle" hidden>
+          <div class="document-shell history-shell">
+            <header class="page-header-row"><div><p class="eyebrow">练习档案</p><h1 id="historyTitle">历史与趋势</h1><p>回看最近场次，找到稳定提升与反复出现的表达缺口。</p></div><button class="button button-secondary" id="exportAllHistoryBtn" type="button">导出全部记录</button></header>
+            <section class="history-summary" aria-labelledby="trendTitle"><div class="trend-copy"><p class="section-kicker">最近 5 场</p><h2 id="trendTitle">综合表现趋势</h2><p><strong id="trendDelta">提升 9 分</strong><span>相比首次练习</span></p></div><div class="trend-chart" id="historyTrendChart" role="img" aria-label="最近五场得分整体上升"><div class="chart-axis" aria-hidden="true"><span>90</span><span>75</span><span>60</span></div><svg aria-hidden="true" viewBox="0 0 560 150" preserveAspectRatio="none"><path class="chart-grid" d="M0 20H560M0 75H560M0 130H560"></path><path class="chart-line" d="M14 108 L147 92 L280 81 L413 70 L546 59"></path><g class="chart-points"><circle cx="14" cy="108" r="4"></circle><circle cx="147" cy="92" r="4"></circle><circle cx="280" cy="81" r="4"></circle><circle cx="413" cy="70" r="4"></circle><circle cx="546" cy="59" r="5"></circle></g></svg><div class="chart-labels" aria-hidden="true"><span>第 1 场</span><span>第 2 场</span><span>第 3 场</span><span>第 4 场</span><span>本场</span></div></div></section>
+            <section class="history-section" aria-labelledby="recentSessionsTitle">
+              <div class="section-title-row history-title-row"><div><p class="section-kicker">全部记录</p><h2 id="recentSessionsTitle">最近场次</h2></div><label class="history-filter-label" for="historyFilter"><span>筛选岗位</span><select id="historyFilter"><option value="all">全部岗位</option><option value="wecom-smart-sheet-pm">企业微信智能表格 · 产品经理</option><option value="general-ai-pm">通用 AI 产品经理</option></select></label></div>
+              <div class="session-list-header" aria-hidden="true"><span>场次</span><span>进度</span><span>表现</span><span>操作</span></div>
+              <div class="session-list" id="historyList">
+                <article class="session-row is-incomplete" data-session-id="session-draft"><div class="session-main"><span class="session-state">未完成</span><h3>企业微信智能表格 · 产品经理</h3><p><time datetime="2026-09-07T19:20:00+08:00">今天 19:20</time> · 30 分钟模式</p></div><div class="session-progress"><strong>3 / 8 题</strong><progress value="3" max="8">3 / 8</progress></div><div class="session-score"><span>暂未评分</span></div><div class="session-actions"><button class="button button-primary button-small continue-session-btn" type="button" data-action="continue" data-session-id="session-draft">继续回答</button><button class="menu-button delete-session-btn" type="button" data-action="delete" data-session-id="session-draft">删除</button></div></article>
+                <article class="session-row" data-session-id="session-001"><div class="session-main"><span class="session-state is-complete">已完成</span><h3>通用 AI 产品经理</h3><p><time datetime="2026-09-06T21:15:00+08:00">9 月 6 日 21:15</time> · 用时 28 分钟</p></div><div class="session-progress"><strong>8 / 8 题</strong><span>完整作答</span></div><div class="session-score"><strong>78</strong><span>综合分</span></div><div class="session-actions"><button class="text-button view-report-btn" type="button" data-action="view-report" data-session-id="session-001">查看报告</button><button class="menu-button export-session-btn" type="button" data-action="export" data-session-id="session-001">导出</button><button class="menu-button delete-session-btn" type="button" data-action="delete" data-session-id="session-001">删除</button></div></article>
+              </div>
+              <div class="empty-state" id="historyEmptyState" hidden><span aria-hidden="true"></span><h3>还没有匹配的练习记录</h3><p>更换筛选条件，或开始第一场模拟面试。</p><button class="button button-primary" id="emptyStartInterviewBtn" type="button">开始练习</button></div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <dialog class="app-dialog settings-dialog" id="settingsDialog" aria-labelledby="settingsTitle">
+      <form method="dialog" id="settingsForm"><header class="dialog-header"><div><p class="section-kicker">偏好与隐私</p><h2 id="settingsTitle">设置与数据管理</h2></div><button class="icon-button dialog-close" id="closeSettingsBtn" type="submit" value="cancel" aria-label="关闭设置">×</button></header>
+        <div class="dialog-body">
+          <section class="settings-group" aria-labelledby="practiceSettingsTitle"><h3 id="practiceSettingsTitle">练习偏好</h3><label class="toggle-row" for="autoSaveToggle"><span><strong>自动保存回答</strong><small>输入过程中持续保存到当前浏览器</small></span><span class="switch"><input id="autoSaveToggle" name="autoSave" type="checkbox" checked><i aria-hidden="true"></i></span></label><label class="toggle-row" for="soundToggle"><span><strong>操作提示音</strong><small>提交与完成时播放轻提示音</small></span><span class="switch"><input id="soundToggle" name="sound" type="checkbox"><i aria-hidden="true"></i></span></label><label class="toggle-row" for="reducedMotionToggle"><span><strong>减少动态效果</strong><small>关闭非必要的过渡与动画</small></span><span class="switch"><input id="reducedMotionToggle" name="reducedMotion" type="checkbox"><i aria-hidden="true"></i></span></label></section>
+          <section class="settings-group" aria-labelledby="voiceSettingsTitle"><h3 id="voiceSettingsTitle">语音转写</h3><label class="select-row" for="speechLanguage"><span><strong>识别语言</strong><small>本站不保存原始录音</small></span><select id="speechLanguage" name="speechLanguage"><option value="zh-CN">普通话（中国大陆）</option><option value="en-US">English (US)</option></select></label><p class="settings-note">是否可用取决于浏览器能力与麦克风权限；音频可能由浏览器厂商在线处理。</p></section>
+          <section class="settings-group data-group" aria-labelledby="dataSettingsTitle"><div class="data-heading"><div><h3 id="dataSettingsTitle">本地数据</h3><p>面试配置、回答与报告均保存在此浏览器。</p></div><strong id="localDataSize">0 KB</strong></div><div class="data-actions"><button class="button button-secondary" id="exportDataBtn" type="button">导出备份</button><label class="button button-secondary file-button" for="importDataInput">导入备份</label><input class="sr-only" id="importDataInput" type="file" accept="application/json,.json"><button class="button button-danger-quiet" id="clearAllDataBtn" type="button" aria-haspopup="dialog">清除全部数据</button></div></section>
+        </div><footer class="dialog-footer"><span id="settingsSaveStatus" role="status" aria-live="polite"></span><button class="button button-primary" id="saveSettingsBtn" type="submit" value="save">保存设置</button></footer></form>
+    </dialog>
+
+    <dialog class="app-dialog confirm-dialog" id="confirmDialog" aria-labelledby="confirmTitle" aria-describedby="confirmMessage"><form method="dialog"><header class="dialog-header"><div><p class="section-kicker">请确认</p><h2 id="confirmTitle">删除这条记录？</h2></div></header><div class="dialog-body compact-dialog-body"><p id="confirmMessage">删除后无法恢复，本地报告也会一并移除。</p></div><footer class="dialog-footer"><button class="button button-secondary" id="confirmCancelBtn" type="submit" value="cancel">取消</button><button class="button button-danger" id="confirmActionBtn" type="submit" value="confirm">确认删除</button></footer></form></dialog>
+    <dialog class="app-dialog confirm-dialog" id="exitInterviewDialog" aria-labelledby="exitDialogTitle" aria-describedby="exitDialogMessage"><form method="dialog"><header class="dialog-header"><div><p class="section-kicker">离开本场面试</p><h2 id="exitDialogTitle">保存进度后退出？</h2></div></header><div class="dialog-body compact-dialog-body"><p id="exitDialogMessage">已提交的回答和当前草稿会保存在本机，你可以从首页或历史库继续。</p></div><footer class="dialog-footer split-dialog-footer"><button class="button button-danger-quiet" id="exitDiscardBtn" type="submit" value="discard">放弃本场</button><span></span><button class="button button-secondary" id="exitCancelBtn" type="submit" value="cancel">继续面试</button><button class="button button-primary" id="exitSaveBtn" type="submit" value="save">保存并退出</button></footer></form></dialog>
+
+    <div class="toast" id="appToast" role="status" aria-live="polite" aria-atomic="true" hidden><span class="toast-mark" aria-hidden="true"></span><span id="toastMessage">已保存</span><button id="toastActionBtn" type="button" hidden>撤销</button><button class="toast-close" id="toastCloseBtn" type="button" aria-label="关闭提示">×</button></div>
+
+    <script src="js/question-packs.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/engine.js"></script>
+    <script src="js/voice.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
