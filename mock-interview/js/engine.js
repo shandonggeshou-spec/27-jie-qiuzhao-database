@@ -91,6 +91,20 @@
     return [];
   }
 
+  function isReverseQuestion(question) {
+    if (!question || typeof question !== "object") return false;
+    if (question.isReverseQuestion === true || question.reverseQuestion === true) return true;
+    var profile = [
+      question.evaluationProfile,
+      question.evaluation_profile,
+      question.profile,
+      question.phase,
+      question.type,
+      question.category
+    ].map(asText).join(" ").toLocaleLowerCase();
+    return /(?:\breverse\b|reverse[-_\s]?question|candidate[-_\s]?question|candidate[-_\s]?qa|反问|候选人提问|向面试官提问)/i.test(profile);
+  }
+
   // 主格式为 { problem: { label, keywords, required }, ... }，同时兼容数组式旧题库。
   function normalizeSignalGroups(question) {
     var source = question && (question.signalGroups || question.signal_groups);
@@ -197,6 +211,10 @@
     return { key: key, label: label, reason: reason, required: required !== false };
   }
 
+  function reverseInapplicableSignal(key) {
+    return /^(?:situation|task|action|result|evidence|numericEvidence|ownership|reflection)$/.test(asText(key));
+  }
+
   function analyzeAnswer(answer, question) {
     var text = asText(answer).trim();
     var compactText = text.replace(/\s+/g, "");
@@ -225,6 +243,7 @@
     var deepReflectionMatches = unique(findMatches(text, DEEP_REFLECTION_PATTERN));
     var firstPersonDetected = /我|本人/.test(text);
     var isIntroduction = question && question.evaluationProfile === "introduction";
+    var isReverse = isReverseQuestion(question);
 
     var groups = normalizeSignalGroups(question || {});
     var groupKeySet = Object.create(null);
@@ -268,6 +287,27 @@
               : 3
     };
 
+    var reverseQuestionMatches = isReverse
+      ? unique(findMatches(text, /(?:[？?]|请问|想(?:请教|了解|知道)|能否|可以介绍|如何|怎样|为什么|哪些|什么|怎么看|期待)/gi))
+      : [];
+    var reverseContextDetected = isReverse && /(?:结合|基于|注意到|了解到|因为|关注|希望|入职|岗位|团队|业务|产品|用户|目标|挑战|协作|成长)/i.test(text);
+    if (isReverse) {
+      var reverseSignalCount = Object.keys(groupSignals).filter(function (key) { return groupSignals[key].matched; }).length;
+      scores.completeness = characters < 8 ? 1 : characters < 18 ? 2 : characters < 35 ? 3 : characters <= 420 ? 5 : 4;
+      scores.structure = reverseQuestionMatches.length >= 2 ? 5 : reverseQuestionMatches.length === 1 ? 4 : characters >= 24 ? 3 : 2;
+      // 反问考察问题质量与信息增量，不要求候选人提供数字、个人业绩或复盘。
+      scores.evidence = reverseContextDetected ? 5 : 4;
+      scores.ownership = 4;
+      scores.reflection = 4;
+      scores.relevance = relevanceRatio === null
+        ? reverseContextDetected ? 5 : 4
+        : matchedRelevantKeywords.length >= 2 || reverseSignalCount >= 2
+          ? 5
+          : matchedRelevantKeywords.length || reverseSignalCount
+            ? 4
+            : 2;
+    }
+
     if (isIntroduction) {
       var conciseIntroduction = characters >= 55 && characters <= 420;
       var introSignals = Object.keys(groupSignals).filter(function (key) { return groupSignals[key].matched; }).length;
@@ -289,6 +329,7 @@
 
     var missingDetails = [];
     groups.forEach(function (group) {
+      if (isReverse && reverseInapplicableSignal(group.key)) return;
       var result = groupSignals[group.key];
       if (result.detectable && !result.matched) {
         missingDetails.push(makeMissingDetail(
@@ -299,16 +340,23 @@
         ));
       }
     });
-    if (characters < (isIntroduction ? 55 : 80)) missingDetails.push(makeMissingDetail("detail", "回答细节", "当前回答较短，信息展开不足", true));
-    if (!isIntroduction) missingPartKeys.forEach(function (key) {
+    if (characters < (isReverse ? 18 : isIntroduction ? 55 : 80)) {
+      missingDetails.push(makeMissingDetail(
+        "detail",
+        isReverse ? "问题具体度" : "回答细节",
+        isReverse ? "当前反问较短，建议说明想了解的具体对象或决策信息" : "当前回答较短，信息展开不足",
+        true
+      ));
+    }
+    if (!isIntroduction && !isReverse) missingPartKeys.forEach(function (key) {
       // 题库 signalGroups 的同名键优先，避免已命中的 action 等信号被 STAR 规则误报为缺失。
       if (groupKeySet[key]) return;
       var labels = { situation: "情境背景", task: "任务目标", action: "具体行动", result: "结果影响" };
       missingDetails.push(makeMissingDetail(key, labels[key], "未检测到清晰的" + labels[key] + "表达", true));
     });
-    if (!isIntroduction && !numberMatches.length) missingDetails.push(makeMissingDetail("numericEvidence", "量化证据", "未检测到数字、比例或明确量级", true));
-    if (!isIntroduction && !ownershipMatches.length) missingDetails.push(makeMissingDetail("ownership", "个人贡献", "未检测到“我负责/主导/推动”等职责表达", true));
-    if (!isIntroduction && !reflectionMatches.length && !groupKeySet.reflection) {
+    if (!isIntroduction && !isReverse && !numberMatches.length) missingDetails.push(makeMissingDetail("numericEvidence", "量化证据", "未检测到数字、比例或明确量级", true));
+    if (!isIntroduction && !isReverse && !ownershipMatches.length) missingDetails.push(makeMissingDetail("ownership", "个人贡献", "未检测到“我负责/主导/推动”等职责表达", true));
+    if (!isIntroduction && !isReverse && !reflectionMatches.length && !groupKeySet.reflection) {
       missingDetails.push(makeMissingDetail("reflection", "复盘成长", "未检测到复盘、经验或改进表达", false));
     }
     if (relevanceRatio !== null && matchedRelevantKeywords.length === 0) {
@@ -323,33 +371,52 @@
     });
 
     var evidenceQuotes = [];
-    addEvidence(evidenceQuotes, "量化线索", numberMatches.length ? sentenceContaining(text, NUMBER_PATTERN) : "");
-    addEvidence(evidenceQuotes, "个人职责", ownershipMatches.length ? sentenceContaining(text, OWNERSHIP_PATTERN) : "");
-    addEvidence(evidenceQuotes, "因果表达", causalQuote);
-    addEvidence(evidenceQuotes, "复盘表达", reflectionMatches.length ? sentenceContaining(text, REFLECTION_PATTERN) : "");
+    if (isReverse) {
+      addEvidence(evidenceQuotes, "反问重点", sentenceContaining(text, /(?:请问|想(?:请教|了解|知道)|能否|如何|怎样|为什么|哪些|什么|怎么看|期待|[？?])/i));
+      addEvidence(evidenceQuotes, "岗位关联", reverseContextDetected ? sentenceContaining(text, /(?:结合|基于|注意到|了解到|关注|希望|入职|岗位|团队|业务|产品|用户|目标|挑战|协作|成长)/i) : "");
+    } else {
+      addEvidence(evidenceQuotes, "量化线索", numberMatches.length ? sentenceContaining(text, NUMBER_PATTERN) : "");
+      addEvidence(evidenceQuotes, "个人职责", ownershipMatches.length ? sentenceContaining(text, OWNERSHIP_PATTERN) : "");
+      addEvidence(evidenceQuotes, "因果表达", causalQuote);
+      addEvidence(evidenceQuotes, "复盘表达", reflectionMatches.length ? sentenceContaining(text, REFLECTION_PATTERN) : "");
+    }
     matchedRelevantKeywords.slice(0, 3).forEach(function (keyword) {
       addEvidence(evidenceQuotes, "相关信号“" + keyword + "”", sentenceContaining(text, keyword));
     });
 
     var strengths = [];
-    if (scores.completeness >= 4) strengths.push("回答展开较充分，包含较多可供追问的细节。");
-    if (scores.structure >= 4) strengths.push("情境、任务、行动与结果的组织较清楚。");
-    if (scores.evidence >= 4) strengths.push("使用了数字或量级描述结果，表达更具体。");
-    if (scores.ownership >= 4) strengths.push("明确说明了个人承担的职责和采取的行动。");
-    if (scores.reflection >= 4) strengths.push("包含复盘与后续改进思路。");
-    if (scores.relevance >= 4) strengths.push("回答覆盖了题目所关注的多个关键信号。");
-    if (!strengths.length && text) strengths.push("已给出基础回答，可继续补充关键细节。");
+    if (isReverse) {
+      if (scores.completeness >= 4) strengths.push("反问具体，能够为判断岗位与团队匹配度补充信息。");
+      if (scores.structure >= 4) strengths.push("问题表达清楚，面试官可以直接回应。");
+      if (scores.relevance >= 4) strengths.push("反问与岗位、团队或业务情境相关。");
+      if (reverseContextDetected) strengths.push("能说明自己的关注点，体现了双向选择意识。");
+      if (!strengths.length && text) strengths.push("已主动提出问题，可以继续提高具体度与岗位关联。");
+    } else {
+      if (scores.completeness >= 4) strengths.push("回答展开较充分，包含较多可供追问的细节。");
+      if (scores.structure >= 4) strengths.push("情境、任务、行动与结果的组织较清楚。");
+      if (scores.evidence >= 4) strengths.push("使用了数字或量级描述结果，表达更具体。");
+      if (scores.ownership >= 4) strengths.push("明确说明了个人承担的职责和采取的行动。");
+      if (scores.reflection >= 4) strengths.push("包含复盘与后续改进思路。");
+      if (scores.relevance >= 4) strengths.push("回答覆盖了题目所关注的多个关键信号。");
+      if (!strengths.length && text) strengths.push("已给出基础回答，可继续补充关键细节。");
+    }
 
     var improvements = [];
-    if (scores.completeness <= 2) improvements.push("补充事件背景、目标、关键动作和最终结果，避免只给结论。");
-    if (scores.structure <= 2) improvements.push("按“情境—任务—行动—结果”重组回答，并明确动作与结果的因果关系。");
-    if (scores.evidence <= 2) improvements.push("加入可说明结果的数字、比例、时间或前后对比；无法量化时说明可观察影响。");
-    if (scores.ownership <= 2) improvements.push("区分团队成果与个人贡献，说明你具体负责、判断和推动了什么。");
-    if (scores.reflection <= 2) improvements.push("补充一次复盘：哪里可改进，以及下次会如何做。");
-    if (scores.relevance <= 2) improvements.push("围绕题目关键词取舍信息，优先回答面试官真正关注的能力点。");
+    if (isReverse) {
+      if (scores.completeness <= 2) improvements.push("把泛泛的询问收窄为 1—3 个具体问题，说明你真正想获得的判断信息。");
+      if (scores.structure <= 2) improvements.push("一次聚焦一个主题，并把问题写成面试官可以直接回答的完整问句。");
+      if (scores.relevance <= 2) improvements.push("优先询问岗位目标、团队协作、业务挑战或成长反馈，避免只问公开信息。");
+    } else {
+      if (scores.completeness <= 2) improvements.push("补充事件背景、目标、关键动作和最终结果，避免只给结论。");
+      if (scores.structure <= 2) improvements.push("按“情境—任务—行动—结果”重组回答，并明确动作与结果的因果关系。");
+      if (scores.evidence <= 2) improvements.push("加入可说明结果的数字、比例、时间或前后对比；无法量化时说明可观察影响。");
+      if (scores.ownership <= 2) improvements.push("区分团队成果与个人贡献，说明你具体负责、判断和推动了什么。");
+      if (scores.reflection <= 2) improvements.push("补充一次复盘：哪里可改进，以及下次会如何做。");
+      if (scores.relevance <= 2) improvements.push("围绕题目关键词取舍信息，优先回答面试官真正关注的能力点。");
+    }
     groups.forEach(function (group) {
       var signal = groupSignals[group.key];
-      if (group.required && signal.detectable && !signal.matched && improvements.length < 7) {
+      if ((!isReverse || !reverseInapplicableSignal(group.key)) && group.required && signal.detectable && !signal.matched && improvements.length < 7) {
         improvements.push("补充“" + group.label + "”相关信息；当前文本未出现题库配置的对应线索。");
       }
     });
@@ -357,7 +424,7 @@
     return {
       signals: {
         length: { characters: characters, sentences: sentenceCount, sufficient: characters >= 80 },
-        star: { detected: detectedPartKeys.length >= 3, parts: clone(parts) },
+        star: { applicable: !isReverse, detected: !isReverse && detectedPartKeys.length >= 3, parts: clone(parts) },
         causality: { detected: causalDetected },
         numericEvidence: { detected: numberMatches.length > 0, matches: numberMatches.slice(0, 8) },
         ownership: { detected: ownershipMatches.length > 0, matches: ownershipMatches.slice(0, 8) },
@@ -379,8 +446,9 @@
       strengths: strengths,
       improvements: unique(improvements).slice(0, 7),
       structureInfo: {
-        framework: "STAR + 因果链",
-        starDetected: detectedPartKeys.length >= 3,
+        framework: isReverse ? "目标关联 + 信息增量 + 双向匹配" : "STAR + 因果链",
+        starApplicable: !isReverse,
+        starDetected: !isReverse && detectedPartKeys.length >= 3,
         causalDetected: causalDetected,
         parts: clone(parts),
         detectedParts: detectedPartKeys,
@@ -389,7 +457,10 @@
         characters: characters,
         sentences: sentenceCount
       },
-      methodNote: "评分仅依据回答文本中的结构、关键词和可观察表达，不代表对经历真实性或业务结论正确性的核验。"
+      evaluationProfile: isReverse ? "reverse-question" : isIntroduction ? "introduction" : "standard",
+      methodNote: isReverse
+        ? "反问阶段仅评估问题的具体度、清晰度与岗位关联，不要求 STAR、量化结果、个人贡献或复盘表达。"
+        : "评分仅依据回答文本中的结构、关键词和可观察表达，不代表对经历真实性或业务结论正确性的核验。"
     };
   }
 
@@ -578,27 +649,86 @@
     return clamp(Math.round(minutes / 5) + 1, 1, 10);
   }
 
-  function explicitFlowForDuration(pack, duration) {
-    var flow = pack && pack.interviewFlow;
-    if (!flow || typeof flow !== "object") return [];
+  function nearestDurationKey(flow, duration) {
+    if (!flow || typeof flow !== "object") return null;
     var minutes = Number(duration);
     var keys = Object.keys(flow).filter(function (key) {
-      return Array.isArray(flow[key]) && flow[key].length && Number.isFinite(Number(key));
+      return flow[key] != null && Number.isFinite(Number(key));
     });
-    if (!keys.length) return [];
+    if (!keys.length) return null;
     keys.sort(function (left, right) {
-      return Math.abs(Number(left) - minutes) - Math.abs(Number(right) - minutes);
+      return Math.abs(Number(left) - minutes) - Math.abs(Number(right) - minutes) || Number(left) - Number(right);
     });
-    return flow[keys[0]].map(asText).filter(Boolean);
+    return keys[0];
   }
 
-  function buildSessionPlan(pack, duration, intensity) {
+  function flowIds(value) {
+    var source = Array.isArray(value)
+      ? value
+      : value && typeof value === "object"
+        ? value.flow || value.questions || value.questionIds || value.ids
+        : null;
+    if (!Array.isArray(source)) return [];
+    return source.map(function (item) {
+      return typeof item === "object" && item ? asText(item.id || item.key || item.code) : asText(item);
+    }).filter(Boolean);
+  }
+
+  function explicitFlowForDuration(pack, duration, options) {
+    var variants = pack && pack.interviewFlowVariants;
+    var variantKey = nearestDurationKey(variants, duration);
+    if (variantKey !== null) {
+      var bucket = variants[variantKey];
+      var entries = Array.isArray(bucket) ? bucket : bucket && (bucket.variants || bucket.flows);
+      // 兼容把单个变体直接写成题目 ID 数组。
+      if (Array.isArray(entries) && entries.length && entries.every(function (item) { return typeof item === "string" || typeof item === "number"; })) {
+        entries = [entries];
+      }
+      if (Array.isArray(entries)) {
+        var usable = entries.map(function (entry, sourceIndex) {
+          return { entry: entry, ids: flowIds(entry), sourceIndex: sourceIndex };
+        }).filter(function (item) { return item.ids.length > 0; });
+        if (usable.length) {
+          var rawSeed = Number(options && options.variantSeed);
+          var seed = Number.isFinite(rawSeed) ? Math.trunc(rawSeed) : 0;
+          var variantIndex = ((seed % usable.length) + usable.length) % usable.length;
+          var selectedVariant = usable[variantIndex];
+          var variantObject = selectedVariant.entry && typeof selectedVariant.entry === "object" && !Array.isArray(selectedVariant.entry)
+            ? selectedVariant.entry
+            : {};
+          return {
+            ids: selectedVariant.ids,
+            source: "interviewFlowVariants",
+            durationKey: Number(variantKey),
+            variantIndex: selectedVariant.sourceIndex,
+            variantId: asText(variantObject.id || variantObject.key || variantObject.name || variantObject.label) || null,
+            variantSeed: seed
+          };
+        }
+      }
+    }
+
+    var flow = pack && pack.interviewFlow;
+    var flowKey = nearestDurationKey(flow, duration);
+    var ids = flowKey === null ? [] : flowIds(flow[flowKey]);
+    return {
+      ids: ids,
+      source: ids.length ? "interviewFlow" : null,
+      durationKey: ids.length ? Number(flowKey) : null,
+      variantIndex: null,
+      variantId: null,
+      variantSeed: null
+    };
+  }
+
+  function buildSessionPlan(pack, duration, intensity, options) {
     var minutes = Number(duration);
     if (!Number.isFinite(minutes) || minutes <= 0) minutes = 30;
     var target = targetQuestionCount(minutes);
     var intensityConfig = intensityInfo(intensity);
     var questions = collectQuestions(pack);
-    var explicitFlow = explicitFlowForDuration(pack, minutes);
+    var flowSelection = explicitFlowForDuration(pack, minutes, options || {});
+    var explicitFlow = flowSelection.ids;
     var questionById = Object.create(null);
     questions.forEach(function (question) { questionById[question.id] = question; });
     var selected = explicitFlow.map(function (id) { return questionById[id]; }).filter(Boolean);
@@ -669,6 +799,11 @@
       maxFollowUpsPerQuestion: intensityConfig.maxFollowUpsPerQuestion,
       estimatedMinutesPerQuestion: selected.length ? round(minutes / selected.length, 1) : 0,
       categoryDistribution: distribution,
+      flowSource: flowSelection.source,
+      flowDurationMinutes: flowSelection.durationKey,
+      variantIndex: flowSelection.variantIndex,
+      variantId: flowSelection.variantId,
+      variantSeed: flowSelection.variantSeed,
       questions: selected
     };
   }
@@ -787,6 +922,53 @@
     return asText(value).replace(/\r/g, "").trim();
   }
 
+  function referenceValues(value) {
+    if (Array.isArray(value)) return value.reduce(function (result, item) {
+      return result.concat(referenceValues(item));
+    }, []);
+    if (value && typeof value === "object") {
+      var text = value.text || value.content || value.answer || value.label || value.title;
+      return text == null ? [] : [markdownText(text)].filter(Boolean);
+    }
+    return value == null ? [] : [markdownText(value)].filter(Boolean);
+  }
+
+  function questionForTurn(data, turn) {
+    var stored = turn && turn.question && typeof turn.question === "object" ? turn.question : {};
+    var planQuestions = data && data.plan && Array.isArray(data.plan.questions)
+      ? data.plan.questions
+      : data && Array.isArray(data.questionsSnapshot) ? data.questionsSnapshot : [];
+    var mainId = turn && (turn.mainQuestionId || turn.questionId);
+    var main = planQuestions.find(function (question) { return question && String(question.id) === String(mainId); }) || {};
+    if (!turn || !turn.isFollowUp) return Object.assign({}, main, stored);
+    var followUps = main.followUps || main.followups || main.followUpQuestions || main.follow_ups;
+    var matched = Array.isArray(followUps) ? followUps.find(function (item, index) {
+      if (!item || typeof item !== "object") return false;
+      var id = item.id || item.key || item.code || "followup_" + (index + 1);
+      return String(id) === String(turn.questionId || stored.id || "");
+    }) : null;
+    return Object.assign({}, matched || {}, stored);
+  }
+
+  function appendMarkdownReference(lines, question) {
+    var framework = referenceValues(question && (question.answerFramework != null ? question.answerFramework : question.answer_framework));
+    var answer = referenceValues(question && (question.referenceAnswer != null ? question.referenceAnswer : question.reference_answer));
+    if (!framework.length && !answer.length) return;
+    lines.push("", "#### 参考回答");
+    if (framework.length) {
+      lines.push("", "**回答框架**", "");
+      framework.forEach(function (item) { lines.push("- " + item); });
+    }
+    if (answer.length) {
+      lines.push("", "**参考示例**", "", answer.join("\n\n"));
+    }
+  }
+
+  function isFollowUpTurn(turn) {
+    if (!turn || typeof turn !== "object") return false;
+    return turn.isFollowUp === true || turn.kind === "followup" || turn.question && turn.question.isFollowUp === true;
+  }
+
   function formatMarkdown(session, turns) {
     var data = session && typeof session === "object" ? session : {};
     var turnList = Array.isArray(turns) ? turns : Array.isArray(data.turns) ? data.turns : [];
@@ -823,6 +1005,7 @@
     lines.push("", "## 下一步练习", "", markdownText(aggregate.nextDrill || "暂无"));
 
     lines.push("", "## 问答记录");
+    var referencedMainIds = Object.create(null);
     turnList.forEach(function (turn, index) {
       var question = turn.question && typeof turn.question === "object"
         ? turn.question.prompt || turn.question.text || turn.question.question || turn.question.title
@@ -843,6 +1026,11 @@
         if (Array.isArray(analysis.improvements) && analysis.improvements.length) {
           lines.push("", "改进：" + analysis.improvements.map(markdownText).join("；"));
         }
+      }
+      var mainId = String(turn && (turn.mainQuestionId || turn.questionId) || "");
+      if (isFollowUpTurn(turn) || !referencedMainIds[mainId]) {
+        appendMarkdownReference(lines, questionForTurn(data, turn));
+        if (!isFollowUpTurn(turn)) referencedMainIds[mainId] = true;
       }
     });
     lines.push("", "> 注：评分来自本地文本规则，仅用于表达训练，不验证经历真实性。", "");

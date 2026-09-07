@@ -61,6 +61,12 @@
                     <span class="pack-copy"><span><strong>企业微信智能表格 · 产品经理</strong><em>推荐</em></span><small>场景洞察、表格产品设计、AI 能力落地与协同判断</small></span>
                     <span class="pack-arrow" aria-hidden="true">→</span>
                   </label>
+                  <label class="pack-option" for="packTencentPm">
+                    <input id="packTencentPm" type="radio" name="questionPack" value="tencent-pm-comprehensive">
+                    <span class="pack-radio" aria-hidden="true"></span>
+                    <span class="pack-copy"><span><strong>腾讯产品经理 · 综合面经</strong><em>新增</em></span><small>项目连续深挖、产品感、AI 场景、职业判断与反问</small></span>
+                    <span class="pack-arrow" aria-hidden="true">→</span>
+                  </label>
                   <label class="pack-option" for="packGeneralAi">
                     <input id="packGeneralAi" type="radio" name="questionPack" value="general-ai-pm">
                     <span class="pack-radio" aria-hidden="true"></span>
@@ -179,7 +185,7 @@
             <header class="page-header-row"><div><p class="eyebrow">练习档案</p><h1 id="historyTitle">历史与趋势</h1><p>回看最近场次，找到稳定提升与反复出现的表达缺口。</p></div><button class="button button-secondary" id="exportAllHistoryBtn" type="button">导出全部记录</button></header>
             <section class="history-summary" aria-labelledby="trendTitle"><div class="trend-copy"><p class="section-kicker">最近 5 场</p><h2 id="trendTitle">综合表现趋势</h2><p><strong id="trendDelta">提升 9 分</strong><span>相比首次练习</span></p></div><div class="trend-chart" id="historyTrendChart" role="img" aria-label="最近五场得分整体上升"><div class="chart-axis" aria-hidden="true"><span>90</span><span>75</span><span>60</span></div><svg aria-hidden="true" viewBox="0 0 560 150" preserveAspectRatio="none"><path class="chart-grid" d="M0 20H560M0 75H560M0 130H560"></path><path class="chart-line" d="M14 108 L147 92 L280 81 L413 70 L546 59"></path><g class="chart-points"><circle cx="14" cy="108" r="4"></circle><circle cx="147" cy="92" r="4"></circle><circle cx="280" cy="81" r="4"></circle><circle cx="413" cy="70" r="4"></circle><circle cx="546" cy="59" r="5"></circle></g></svg><div class="chart-labels" aria-hidden="true"><span>第 1 场</span><span>第 2 场</span><span>第 3 场</span><span>第 4 场</span><span>本场</span></div></div></section>
             <section class="history-section" aria-labelledby="recentSessionsTitle">
-              <div class="section-title-row history-title-row"><div><p class="section-kicker">全部记录</p><h2 id="recentSessionsTitle">最近场次</h2></div><label class="history-filter-label" for="historyFilter"><span>筛选岗位</span><select id="historyFilter"><option value="all">全部岗位</option><option value="wecom-smart-sheet-pm">企业微信智能表格 · 产品经理</option><option value="general-ai-pm">通用 AI 产品经理</option></select></label></div>
+              <div class="section-title-row history-title-row"><div><p class="section-kicker">全部记录</p><h2 id="recentSessionsTitle">最近场次</h2></div><label class="history-filter-label" for="historyFilter"><span>筛选岗位</span><select id="historyFilter"><option value="all">全部岗位</option><option value="wecom-smart-sheet-pm">企业微信智能表格 · 产品经理</option><option value="tencent-pm-comprehensive">腾讯产品经理 · 综合面经</option><option value="general-ai-pm">通用 AI 产品经理</option></select></label></div>
               <div class="session-list-header" aria-hidden="true"><span>场次</span><span>进度</span><span>表现</span><span>操作</span></div>
               <div class="session-list" id="historyList">
                 <article class="session-row is-incomplete" data-session-id="session-draft"><div class="session-main"><span class="session-state">未完成</span><h3>企业微信智能表格 · 产品经理</h3><p><time datetime="2026-09-07T19:20:00+08:00">今天 19:20</time> · 30 分钟模式</p></div><div class="session-progress"><strong>3 / 8 题</strong><progress value="3" max="8">3 / 8</progress></div><div class="session-score"><span>暂未评分</span></div><div class="session-actions"><button class="button button-primary button-small continue-session-btn" type="button" data-action="continue" data-session-id="session-draft">继续回答</button><button class="menu-button delete-session-btn" type="button" data-action="delete" data-session-id="session-draft">删除</button></div></article>
@@ -206,10 +212,10 @@
 
     <div class="toast" id="appToast" role="status" aria-live="polite" aria-atomic="true" hidden><span class="toast-mark" aria-hidden="true"></span><span id="toastMessage">已保存</span><button id="toastActionBtn" type="button" hidden>撤销</button><button class="toast-close" id="toastCloseBtn" type="button" aria-label="关闭提示">×</button></div>
 
-    <script src="js/question-packs.js?v=2.0.0"></script>
+    <script src="js/question-packs.js?v=3.1.0"></script>
     <script src="js/storage.js"></script>
-    <script src="js/engine.js?v=2.0.0"></script>
+    <script src="js/engine.js?v=3.1.0"></script>
     <script src="js/voice.js"></script>
-    <script src="app.js?v=2.0.0"></script>
+    <script src="app.js?v=3.1.0"></script>
   </body>
 </html>

@@ -102,6 +102,38 @@
     return String(question.question || question.prompt || question.text || question.title || "");
   }
 
+  function isReverseQuestion(question) {
+    if (!question || typeof question !== "object") return false;
+    if (question.isReverseQuestion === true || question.reverseQuestion === true) return true;
+    return /(?:\breverse\b|candidate[-_\s]?question|candidate[-_\s]?qa|反问|候选人提问|向面试官提问)/i.test([
+      question.evaluationProfile,
+      question.evaluation_profile,
+      question.profile,
+      question.phase,
+      question.type,
+      question.category
+    ].filter(Boolean).join(" "));
+  }
+
+  function referenceValues(value) {
+    if (Array.isArray(value)) return value.reduce(function (result, item) {
+      return result.concat(referenceValues(item));
+    }, []);
+    if (value && typeof value === "object") {
+      var text = value.text || value.content || value.answer || value.label || value.title;
+      return text == null ? [] : [String(text).trim()].filter(Boolean);
+    }
+    return value == null ? [] : [String(value).trim()].filter(Boolean);
+  }
+
+  function questionReference(question) {
+    question = question && typeof question === "object" ? question : {};
+    return {
+      framework: referenceValues(question.answerFramework != null ? question.answerFramework : question.answer_framework),
+      answer: referenceValues(question.referenceAnswer != null ? question.referenceAnswer : question.reference_answer)
+    };
+  }
+
   function getPack(id) {
     return PACKS.find(function (pack) { return pack && pack.id === id; }) || null;
   }
@@ -466,7 +498,7 @@
       } else if (done) item.classList.add("is-complete");
       add(item, "span", "", String(index + 1).padStart(2, "0"));
       var content = node("div");
-      add(content, "strong", "", question.category || "核心问题");
+      add(content, "strong", "", isReverseQuestion(question) ? "反问阶段" : question.category || "核心问题");
       add(content, "small", "", current
         ? state.currentQuestion && state.currentQuestion.kind === "followup" ? "正在追问" : "正在回答"
         : done ? "已回答" : "待回答");
@@ -496,18 +528,26 @@
     var asked = state.askedByMain[descriptor.mainQuestionId] || [];
     var followNumber = Math.max(1, asked.indexOf(descriptor.id) + 1);
     var estimate = Math.max(1, Math.round(numberOr(activePlan().estimatedMinutesPerQuestion, 2)));
+    var reversePhase = isReverseQuestion(mainQuestion(state.currentPlanIndex)) || isReverseQuestion(question);
     el.interviewTitle.textContent = sessionTitle(state.activeSession);
-    el.questionTypeLabel.textContent = descriptor.kind === "followup"
+    el.questionTypeLabel.textContent = reversePhase
+      ? "反问阶段 · 双向了解"
+      : descriptor.kind === "followup"
       ? "追问 · " + (question.category || "回答深挖")
       : "核心问题 · " + (question.category || "综合能力");
     el.currentQuestionNumber.textContent = "问题 " + String(state.currentPlanIndex + 1).padStart(2, "0") +
       (descriptor.kind === "followup" ? " · 追问 " + followNumber : "");
     el.currentQuestionText.textContent = descriptor.prompt || questionText(question);
-    el.currentQuestionGuidance.textContent = descriptor.kind === "followup"
+    el.currentQuestionGuidance.textContent = reversePhase
+      ? "现在由你向面试官提问。聚焦真正影响岗位判断的信息，清楚说明你想了解什么即可。"
+      : descriptor.kind === "followup"
       ? "你可以接着刚才的回答说。"
       : question.evaluationProfile === "introduction"
         ? "控制在 1 分钟左右，像真实面试一样自然介绍即可。"
         : "像真实面试一样直接回答即可。";
+    el.answerInput.placeholder = reversePhase
+      ? "写下你想向面试官了解的问题……"
+      : "在这里输入回答，或点击“语音回答”开始转写……";
     el.answerInput.value = draft && draft.questionId === descriptor.id ? String(draft.answer || "") : "";
     updateAnswerCount();
     el.answerError.hidden = true;
@@ -589,6 +629,11 @@
     if (!main || !state.currentQuestion || state.currentQuestion.kind !== "followup") return main || state.currentQuestion.question;
     var enriched = clone(main);
     enriched.question = state.currentQuestion.prompt;
+    ["id", "evaluationProfile", "evaluation_profile", "signalGroups", "signal_groups", "keywords"].forEach(function (key) {
+      if (state.currentQuestion.question && state.currentQuestion.question[key] != null) {
+        enriched[key] = clone(state.currentQuestion.question[key]);
+      }
+    });
     return enriched;
   }
 
@@ -819,13 +864,14 @@
       candidateContext: String(data.get("candidateContext") || "").trim()
     };
     try {
-      var plan = Engine.buildSessionPlan(pack, config.duration, config.followupIntensity);
+      var variantSeed = Date.now();
+      var plan = Engine.buildSessionPlan(pack, config.duration, config.followupIntensity, { variantSeed: variantSeed });
       await Storage.saveSetting("lastSetup", {
         questionPack: pack.id,
         duration: config.duration,
         followupIntensity: config.followupIntensity
       });
-      await createInterview(pack, plan, config);
+      await createInterview(pack, plan, config, { variantSeed: variantSeed });
     } catch (error) {
       fail(error, "无法开始模拟面试。");
     }
@@ -954,6 +1000,71 @@
     return result;
   }
 
+  function matchingFollowUp(mainQuestion, turn) {
+    var followUps = mainQuestion && (mainQuestion.followUps || mainQuestion.followups || mainQuestion.followUpQuestions || mainQuestion.follow_ups);
+    if (!Array.isArray(followUps)) return null;
+    return followUps.find(function (item, index) {
+      if (!item || typeof item !== "object") return false;
+      var id = String(item.id || item.key || item.code || "followup_" + (index + 1));
+      return id === String(turn.questionId || turn.question && turn.question.id || "");
+    }) || null;
+  }
+
+  function referenceSource(mainQuestion, turn) {
+    var stored = turn && turn.question && typeof turn.question === "object" ? turn.question : {};
+    if (!turn || !turn.isFollowUp) return Object.assign({}, mainQuestion || {}, stored);
+    return Object.assign({}, matchingFollowUp(mainQuestion, turn) || {}, stored);
+  }
+
+  function appendReferenceContent(parent, source) {
+    var reference = questionReference(source);
+    if (reference.framework.length) {
+      add(parent, "h5", "", "回答框架");
+      if (reference.framework.length === 1) {
+        add(parent, "p", "", reference.framework[0]);
+      } else {
+        var list = node("ol", "reference-framework");
+        reference.framework.forEach(function (item) { add(list, "li", "", item); });
+        parent.appendChild(list);
+      }
+    }
+    if (reference.answer.length) {
+      add(parent, "h5", "", "参考示例");
+      reference.answer.forEach(function (item) { add(parent, "p", "", item); });
+    }
+    return reference.framework.length > 0 || reference.answer.length > 0;
+  }
+
+  function createReferenceSection(mainQuestion, related) {
+    var entries = [];
+    var includedMain = false;
+    related.forEach(function (turn) {
+      var source = referenceSource(mainQuestion, turn);
+      var reference = questionReference(source);
+      if (!reference.framework.length && !reference.answer.length) return;
+      if (!turn.isFollowUp && includedMain) return;
+      entries.push({ turn: turn, source: source });
+      if (!turn.isFollowUp) includedMain = true;
+    });
+    if (!entries.length) return null;
+
+    var details = node("details", "reference-answer-section");
+    add(details, "summary", "", "参考回答");
+    var content = node("div", "reference-answer-content");
+    entries.forEach(function (entry, index) {
+      var group = node("section", "reference-answer-group");
+      if (entry.turn.isFollowUp) {
+        add(group, "h4", "", "追问参考 · " + (entry.turn.questionText || questionText(entry.source) || "追问 " + index));
+      } else {
+        add(group, "h4", "", "主问题参考");
+      }
+      appendReferenceContent(group, entry.source);
+      content.appendChild(group);
+    });
+    details.appendChild(content);
+    return details;
+  }
+
   function renderReviews(turns, plan) {
     el.reportQuestionList.replaceChildren();
     var ranked = [];
@@ -968,7 +1079,9 @@
       }).filter(Number.isFinite);
       var score = values.length ? Math.round(values.reduce(function (sum, value) { return sum + value; }, 0) / values.length) : 0;
       ranked.push({ id: mainId, score: score });
-      var question = turn.question || plan.questions.find(function (item) { return item.id === mainId; }) || {};
+      var plannedQuestion = plan.questions.find(function (item) { return item.id === mainId; }) || {};
+      var storedQuestion = turn.question && typeof turn.question === "object" ? turn.question : {};
+      var question = Object.assign({}, plannedQuestion, storedQuestion);
       var article = node("article", "review-item");
       article.dataset.questionId = mainId;
       var header = node("header");
@@ -1010,6 +1123,8 @@
       grid.appendChild(adviceBlock);
       details.appendChild(grid);
       article.appendChild(details);
+      var referenceSection = createReferenceSection(question, related);
+      if (referenceSection) article.appendChild(referenceSection);
       var footer = node("footer");
       var button = node("button", "text-button reanswer-btn", "重答这一题 →");
       button.type = "button";
