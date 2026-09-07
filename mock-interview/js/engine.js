@@ -140,6 +140,18 @@
     return textLower.indexOf(asText(keyword).toLocaleLowerCase()) >= 0;
   }
 
+  function heuristicSignalMatch(key, text) {
+    var patterns = {
+      problem: /(?:问题|痛点|困难|难点|瓶颈|卡在|缺少|没有|无法|不准|错误|低效|耗时|成本|重复|分散|遗漏|冲突)/i,
+      context: /(?:用户|业务|客户|团队|同学|管理者|一线|当时|之前|早期|背景|场景|流程|区域|国家|角色)/i,
+      action: /(?:我(?:负责|主导|推动|提出|设计|分析|制定|协调|搭建|完成|组织|落地|跟进|优化|梳理|拆解|验证)|我们(?:先|通过|设计|搭建|梳理|拆解)|首先|其次|然后)/i,
+      evidence: /(?:结果|最终|上线|落地|提升|下降|减少|增长|覆盖|准确率|完成率|留存|反馈|验证|\d)/i,
+      judgment: /(?:因为|所以|因此|相比|而不是|选择|判断|取舍|权衡|优先|边界|风险|原因)/i,
+      reflection: /(?:复盘|反思|不足|改进|如果再来|下次|后来调整|没有达到|仍然|还需要)/i
+    };
+    return patterns[key] ? patterns[key].test(text) : false;
+  }
+
   function findMatches(text, regex) {
     var flags = regex.flags.indexOf("g") >= 0 ? regex.flags : regex.flags + "g";
     var copy = new RegExp(regex.source, flags);
@@ -212,6 +224,7 @@
     var reflectionMatches = unique(findMatches(text, REFLECTION_PATTERN));
     var deepReflectionMatches = unique(findMatches(text, DEEP_REFLECTION_PATTERN));
     var firstPersonDetected = /我|本人/.test(text);
+    var isIntroduction = question && question.evaluationProfile === "introduction";
 
     var groups = normalizeSignalGroups(question || {});
     var groupKeySet = Object.create(null);
@@ -219,11 +232,13 @@
     groups.forEach(function (group) {
       groupKeySet[group.key] = true;
       var matchedKeywords = group.keywords.filter(function (keyword) { return includesKeyword(lower, keyword); });
+      var heuristicMatched = heuristicSignalMatch(group.key, text);
       groupSignals[group.key] = {
         label: group.label,
         required: group.required,
         detectable: group.keywords.length > 0,
-        matched: group.keywords.length > 0 ? matchedKeywords.length > 0 : null,
+        matched: group.keywords.length > 0 ? matchedKeywords.length > 0 || heuristicMatched : heuristicMatched || null,
+        heuristicMatched: heuristicMatched,
         matchedKeywords: matchedKeywords,
         keywords: group.keywords.slice()
       };
@@ -253,6 +268,16 @@
               : 3
     };
 
+    if (isIntroduction) {
+      var conciseIntroduction = characters >= 55 && characters <= 420;
+      var introSignals = Object.keys(groupSignals).filter(function (key) { return groupSignals[key].matched; }).length;
+      scores.completeness = characters < 35 ? 1 : characters < 55 ? 3 : characters <= 420 ? 5 : 3;
+      scores.structure = introSignals >= 3 ? 5 : introSignals === 2 ? 4 : introSignals === 1 ? 3 : 2;
+      scores.evidence = numberMatches.length || matchedRelevantKeywords.length >= 2 ? 4 : 3;
+      scores.ownership = firstPersonDetected ? 4 : 2;
+      scores.reflection = conciseIntroduction ? 4 : 3;
+    }
+
     if (!text) {
       DIMENSION_KEYS.forEach(function (key) { scores[key] = 1; });
     }
@@ -274,16 +299,16 @@
         ));
       }
     });
-    if (characters < 80) missingDetails.push(makeMissingDetail("detail", "回答细节", "当前回答较短，信息展开不足", true));
-    missingPartKeys.forEach(function (key) {
+    if (characters < (isIntroduction ? 55 : 80)) missingDetails.push(makeMissingDetail("detail", "回答细节", "当前回答较短，信息展开不足", true));
+    if (!isIntroduction) missingPartKeys.forEach(function (key) {
       // 题库 signalGroups 的同名键优先，避免已命中的 action 等信号被 STAR 规则误报为缺失。
       if (groupKeySet[key]) return;
       var labels = { situation: "情境背景", task: "任务目标", action: "具体行动", result: "结果影响" };
       missingDetails.push(makeMissingDetail(key, labels[key], "未检测到清晰的" + labels[key] + "表达", true));
     });
-    if (!numberMatches.length) missingDetails.push(makeMissingDetail("numericEvidence", "量化证据", "未检测到数字、比例或明确量级", true));
-    if (!ownershipMatches.length) missingDetails.push(makeMissingDetail("ownership", "个人贡献", "未检测到“我负责/主导/推动”等职责表达", true));
-    if (!reflectionMatches.length && !groupKeySet.reflection) {
+    if (!isIntroduction && !numberMatches.length) missingDetails.push(makeMissingDetail("numericEvidence", "量化证据", "未检测到数字、比例或明确量级", true));
+    if (!isIntroduction && !ownershipMatches.length) missingDetails.push(makeMissingDetail("ownership", "个人贡献", "未检测到“我负责/主导/推动”等职责表达", true));
+    if (!isIntroduction && !reflectionMatches.length && !groupKeySet.reflection) {
       missingDetails.push(makeMissingDetail("reflection", "复盘成长", "未检测到复盘、经验或改进表达", false));
     }
     if (relevanceRatio !== null && matchedRelevantKeywords.length === 0) {
@@ -553,46 +578,79 @@
     return clamp(Math.round(minutes / 5) + 1, 1, 10);
   }
 
+  function explicitFlowForDuration(pack, duration) {
+    var flow = pack && pack.interviewFlow;
+    if (!flow || typeof flow !== "object") return [];
+    var minutes = Number(duration);
+    var keys = Object.keys(flow).filter(function (key) {
+      return Array.isArray(flow[key]) && flow[key].length && Number.isFinite(Number(key));
+    });
+    if (!keys.length) return [];
+    keys.sort(function (left, right) {
+      return Math.abs(Number(left) - minutes) - Math.abs(Number(right) - minutes);
+    });
+    return flow[keys[0]].map(asText).filter(Boolean);
+  }
+
   function buildSessionPlan(pack, duration, intensity) {
     var minutes = Number(duration);
     if (!Number.isFinite(minutes) || minutes <= 0) minutes = 30;
     var target = targetQuestionCount(minutes);
     var intensityConfig = intensityInfo(intensity);
     var questions = collectQuestions(pack);
+    var explicitFlow = explicitFlowForDuration(pack, minutes);
+    var questionById = Object.create(null);
+    questions.forEach(function (question) { questionById[question.id] = question; });
+    var selected = explicitFlow.map(function (id) { return questionById[id]; }).filter(Boolean);
     var buckets = [];
     var bucketByCategory = Object.create(null);
 
-    questions.forEach(function (question, sourceIndex) {
-      var category = asText(question.category || question.type || question.topic || question.dimension || "通用");
-      if (!bucketByCategory[category]) {
-        bucketByCategory[category] = { category: category, items: [] };
-        buckets.push(bucketByCategory[category]);
-      }
-      bucketByCategory[category].items.push({ question: question, sourceIndex: sourceIndex });
-    });
-
-    buckets.forEach(function (bucket) {
-      bucket.items.sort(function (a, b) {
-        var gapA = Math.abs(difficultyValue(a.question) - intensityConfig.targetDifficulty);
-        var gapB = Math.abs(difficultyValue(b.question) - intensityConfig.targetDifficulty);
-        var priorityA = Number.isFinite(Number(a.question.priority)) ? Number(a.question.priority) : 99;
-        var priorityB = Number.isFinite(Number(b.question.priority)) ? Number(b.question.priority) : 99;
-        return gapA - gapB || priorityA - priorityB || a.sourceIndex - b.sourceIndex;
+    if (!selected.length) {
+      questions.forEach(function (question, sourceIndex) {
+        var category = asText(question.category || question.type || question.topic || question.dimension || "通用");
+        if (!bucketByCategory[category]) {
+          bucketByCategory[category] = { category: category, items: [] };
+          buckets.push(bucketByCategory[category]);
+        }
+        bucketByCategory[category].items.push({ question: question, sourceIndex: sourceIndex });
       });
-    });
 
-    var selected = [];
-    var cursor = 0;
-    while (selected.length < target && buckets.some(function (bucket) { return bucket.items.length > 0; })) {
-      var bucket = buckets[cursor % buckets.length];
-      if (bucket.items.length) selected.push(bucket.items.shift().question);
-      cursor += 1;
+      buckets.forEach(function (bucket) {
+        bucket.items.sort(function (a, b) {
+          var gapA = Math.abs(difficultyValue(a.question) - intensityConfig.targetDifficulty);
+          var gapB = Math.abs(difficultyValue(b.question) - intensityConfig.targetDifficulty);
+          var priorityA = Number.isFinite(Number(a.question.priority)) ? Number(a.question.priority) : 99;
+          var priorityB = Number.isFinite(Number(b.question.priority)) ? Number(b.question.priority) : 99;
+          return gapA - gapB || priorityA - priorityB || a.sourceIndex - b.sourceIndex;
+        });
+      });
+
+      var cursor = 0;
+      while (selected.length < target && buckets.some(function (bucket) { return bucket.items.length > 0; })) {
+        var bucket = buckets[cursor % buckets.length];
+        if (bucket.items.length) selected.push(bucket.items.shift().question);
+        cursor += 1;
+      }
+    } else {
+      target = selected.length;
     }
 
     selected = selected.map(function (question, index) {
       var copy = clone(question);
       copy.planOrder = index + 1;
-      copy.maxFollowUps = Math.min(2, Number.isFinite(Number(copy.maxFollowUps)) ? Number(copy.maxFollowUps) : intensityConfig.maxFollowUpsPerQuestion);
+      var configuredLimit = Number.isFinite(Number(copy.maxFollowUps)) ? Number(copy.maxFollowUps) : null;
+      if (configuredLimit !== null) {
+        copy.maxFollowUps = Math.min(2, Math.max(0, configuredLimit));
+      } else if (explicitFlow.length) {
+        // 真实一面会把追问集中在开场后的两个主项目问题，后半段不会机械深挖每一题。
+        copy.maxFollowUps = intensityConfig.maxFollowUpsPerQuestion === 0
+          ? 0
+          : intensityConfig.maxFollowUpsPerQuestion === 2 && index >= 1 && index <= 2
+            ? 2
+            : Math.min(1, intensityConfig.maxFollowUpsPerQuestion);
+      } else {
+        copy.maxFollowUps = Math.min(2, intensityConfig.maxFollowUpsPerQuestion);
+      }
       return copy;
     });
 

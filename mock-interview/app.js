@@ -473,15 +473,6 @@
       item.appendChild(content);
       el.questionQueue.appendChild(item);
     });
-    var main = mainQuestion(state.currentPlanIndex);
-    var askedCount = main && state.askedByMain[main.id] ? state.askedByMain[main.id].length : 0;
-    var followItem = node("li", "is-muted");
-    add(followItem, "span", "", "＋");
-    var followContent = node("div");
-    add(followContent, "strong", "", "后续问题");
-    add(followContent, "small", "", askedCount ? "本题已追问 " + askedCount + " 次" : "根据回答生成");
-    followItem.appendChild(followContent);
-    el.questionQueue.appendChild(followItem);
   }
 
   function updateAnswerCount() {
@@ -513,8 +504,10 @@
       (descriptor.kind === "followup" ? " · 追问 " + followNumber : "");
     el.currentQuestionText.textContent = descriptor.prompt || questionText(question);
     el.currentQuestionGuidance.textContent = descriptor.kind === "followup"
-      ? descriptor.reason || "请直接补充追问所需的信息，保持具体、可验证。"
-      : "建议用 " + estimate + "–" + (estimate + 1) + " 分钟回答，尽量说明个人行动与事实证据。";
+      ? "你可以接着刚才的回答说。"
+      : question.evaluationProfile === "introduction"
+        ? "控制在 1 分钟左右，像真实面试一样自然介绍即可。"
+        : "像真实面试一样直接回答即可。";
     el.answerInput.value = draft && draft.questionId === descriptor.id ? String(draft.answer || "") : "";
     updateAnswerCount();
     el.answerError.hidden = true;

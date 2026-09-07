@@ -19,13 +19,58 @@ var MOCK_QUESTION_PACKS = [
       "数据权限与安全治理",
       "跨团队推进与复盘",
     ],
-    version: "1.1.0",
+    version: "2.0.0",
+    interviewFlow: {
+      15: [
+        "wecom-introduction",
+        "wecom-flagship-project",
+        "wecom-positioning",
+        "wecom-ai-feature",
+      ],
+      30: [
+        "wecom-introduction",
+        "wecom-flagship-project",
+        "wecom-method-transfer",
+        "wecom-positioning",
+        "wecom-ai-feature",
+      ],
+      45: [
+        "wecom-introduction",
+        "wecom-flagship-project",
+        "wecom-method-transfer",
+        "wecom-demand-abstraction",
+        "wecom-positioning",
+        "wecom-ai-feature",
+        "wecom-ai-value",
+        "wecom-disagreement",
+      ],
+    },
     questions: [
       {
+        id: "wecom-introduction",
+        category: "开场",
+        priority: 0,
+        maxFollowUps: 0,
+        evaluationProfile: "introduction",
+        question: "先简单介绍一下自己吧。",
+        keywords: ["经历主线", "当前方向", "代表项目", "核心能力"],
+        signalGroups: {
+          context: { label: "个人背景", keywords: ["硕士", "本科", "专业", "实习", "经历"], required: true },
+          action: { label: "经历主线", keywords: ["负责", "参与", "产品", "分析", "项目"], required: true },
+          judgment: { label: "能力定位", keywords: ["擅长", "优势", "能力", "关注", "主线"], required: true },
+        },
+        followUps: [],
+        evaluationDimensions: [
+          { name: "信息取舍", lookFor: "在一分钟内交代背景、代表经历和能力主线。" },
+          { name: "个人定位", lookFor: "让面试官知道后续最值得追问什么。" },
+          { name: "表达自然度", lookFor: "口语化表达，不逐条复述简历。" },
+        ],
+      },
+      {
         id: "wecom-method-transfer",
-        category: "经历迁移",
+        category: "项目深挖",
         priority: 1,
-        question: "结合一段过往经历，讲讲你如何把分散的业务知识或人工流程，沉淀为可配置、可复用的产品能力。",
+        question: "你刚才这个项目里，哪些事情原来主要靠人工或经验？后来是怎么把它做成产品能力的？",
         keywords: ["业务问题", "知识结构化", "规则抽象", "产品化", "可配置", "复用验证"],
         signalGroups: {
           problem: { label: "原始问题", keywords: ["信息分散", "人工成本", "标准不一", "协作低效"], required: true },
@@ -36,9 +81,9 @@ var MOCK_QUESTION_PACKS = [
           reflection: { label: "迭代复盘", keywords: ["问题", "迭代", "可迁移方法", "下一步"], required: false },
         },
         followUps: [
-          { id: "wecom-method-transfer-f1", triggerLabel: "直接罗列功能，没有还原产品化前的问题", requires: ["problem", "context"], question: "在方案出现之前，谁在什么环节遇到了什么问题？为什么不能继续靠人工处理？" },
-          { id: "wecom-method-transfer-f2", triggerLabel: "只讲整理过程，没有说明抽象和取舍", requires: ["action", "judgment"], question: "哪些部分被抽象成统一能力，哪些保留为业务配置？这个边界是怎么判断的？" },
-          { id: "wecom-method-transfer-f3", triggerLabel: "把交付完成当作产品有效", requires: ["evidence", "reflection"], question: "你用什么证据证明它被复用且真正改善了原流程？如果重做一次，你会先改哪一步？" },
+          { id: "wecom-method-transfer-f1", triggerLabel: "直接罗列功能，没有还原产品化前的问题", requires: ["problem", "context"], question: "为什么当时不能继续靠人工或者文档来解决？" },
+          { id: "wecom-method-transfer-f2", triggerLabel: "只讲整理过程，没有说明抽象和取舍", requires: ["action", "judgment"], question: "这里面哪些做成了统一规则，哪些保留了业务差异？" },
+          { id: "wecom-method-transfer-f3", triggerLabel: "把交付完成当作产品有效", requires: ["evidence", "reflection"], question: "你怎么确认它真的改善了原来的流程？" },
         ],
         evaluationDimensions: [
           { name: "问题还原", lookFor: "说明产品化前的用户、流程、成本与核心矛盾。" },
@@ -51,7 +96,7 @@ var MOCK_QUESTION_PACKS = [
         id: "wecom-positioning",
         category: "产品判断",
         priority: 1,
-        question: "你如何理解企业微信智能表格的产品定位？请基于公开信息与合理假设作答。",
+        question: "你怎么理解企业微信智能表格？它主要在解决什么问题？",
         keywords: ["结构化记录", "轻量业务应用", "协作执行", "多角色", "产品边界", "价值闭环"],
         signalGroups: {
           problem: { label: "核心任务", keywords: ["记录管理", "流程协同", "动作闭环"], required: true },
@@ -62,9 +107,9 @@ var MOCK_QUESTION_PACKS = [
           reflection: { label: "不确定性", keywords: ["公开信息边界", "待验证假设", "反例"], required: false },
         },
         followUps: [
-          { id: "wecom-positioning-f1", triggerLabel: "把产品等同于带 AI 的传统表格", requires: ["problem", "action"], question: "它与传统电子表格的本质差异是什么？哪些任务仍更适合传统表格？" },
-          { id: "wecom-positioning-f2", triggerLabel: "声称能替代所有专业系统", requires: ["judgment", "reflection"], question: "它不应该替代哪些专业系统？你如何判断产品边界？" },
-          { id: "wecom-positioning-f3", triggerLabel: "只有概念，缺少多角色和验证方式", requires: ["context", "evidence"], question: "搭建者、一线使用者和管理者分别为什么使用它，又可能因为什么停止使用？" },
+          { id: "wecom-positioning-f1", triggerLabel: "把产品等同于带 AI 的传统表格", requires: ["problem", "action"], question: "那它和 Excel、普通在线表格最大的区别是什么？" },
+          { id: "wecom-positioning-f2", triggerLabel: "声称能替代所有专业系统", requires: ["judgment", "reflection"], question: "哪些事情你觉得它并不适合做？" },
+          { id: "wecom-positioning-f3", triggerLabel: "只有概念，缺少多角色和验证方式", requires: ["context", "evidence"], question: "谁会最先用它？为什么会持续用下去？" },
         ],
         evaluationDimensions: [
           { name: "定位清晰度", lookFor: "用用户任务和工作流定义产品，不堆叠空泛标签。" },
@@ -77,7 +122,7 @@ var MOCK_QUESTION_PACKS = [
         id: "wecom-flagship-project",
         category: "项目深挖",
         priority: 1,
-        question: "请用一个已脱敏的项目，说明你如何从问题定义推进到上线与复盘。",
+        question: "挑一个你做得最深入的项目讲讲。",
         keywords: ["问题定义", "个人贡献", "关键取舍", "协同交付", "结果证据", "复盘"],
         signalGroups: {
           problem: { label: "问题定义", keywords: ["目标用户", "核心痛点", "为什么值得做"], required: true },
@@ -88,9 +133,9 @@ var MOCK_QUESTION_PACKS = [
           reflection: { label: "复盘迁移", keywords: ["未达预期", "机制改进", "可迁移方法"], required: true },
         },
         followUps: [
-          { id: "wecom-flagship-project-f1", triggerLabel: "罗列功能，没有收敛核心问题", requires: ["problem", "context"], question: "这个项目只允许保留一个目标时，你会保留什么，为什么？" },
-          { id: "wecom-flagship-project-f2", triggerLabel: "大量使用“我们”，个人边界不清", requires: ["action", "judgment"], question: "哪些判断和产出由你直接负责，哪些属于团队或专业负责人？" },
-          { id: "wecom-flagship-project-f3", triggerLabel: "结果缺少口径或只报正向结论", requires: ["evidence", "reflection"], question: "结果如何定义和验证？有哪些未达到预期或仍不能确认的部分？" },
+          { id: "wecom-flagship-project-f1", triggerLabel: "罗列功能，没有收敛核心问题", requires: ["problem", "context"], question: "这个项目一开始为什么要做？最核心的问题是什么？" },
+          { id: "wecom-flagship-project-f2", triggerLabel: "大量使用“我们”，个人边界不清", requires: ["action", "judgment"], question: "你在里面具体负责哪一部分？有哪个关键判断是你做的？" },
+          { id: "wecom-flagship-project-f3", triggerLabel: "结果缺少口径或只报正向结论", requires: ["evidence", "reflection"], question: "最后怎么判断它做得好不好？有没有没达到预期的地方？" },
         ],
         evaluationDimensions: [
           { name: "结构表达", lookFor: "完整串联问题、约束、行动、结果和复盘。" },
@@ -103,7 +148,7 @@ var MOCK_QUESTION_PACKS = [
         id: "wecom-demand-abstraction",
         category: "用户与需求",
         priority: 1,
-        question: "你如何把一个模糊的企业需求抽象为可配置、可复用的智能表格方案？",
+        question: "业务方只说‘想用表格把这件事管起来’，你会先问什么？",
         keywords: ["用户任务", "业务对象", "字段关系", "角色权限", "自动化", "验收标准"],
         signalGroups: {
           problem: { label: "需求本质", keywords: ["目标动作", "现有阻碍", "使用频率"], required: true },
@@ -114,9 +159,9 @@ var MOCK_QUESTION_PACKS = [
           reflection: { label: "迭代机制", keywords: ["反馈回流", "配置摩擦", "扩展条件"], required: false },
         },
         followUps: [
-          { id: "wecom-demand-abstraction-f1", triggerLabel: "按用户原话直接堆功能", requires: ["problem", "context"], question: "请把这个需求拆成业务对象、角色、状态和需要触发的动作。" },
-          { id: "wecom-demand-abstraction-f2", triggerLabel: "方案过度定制或过度通用", requires: ["action", "judgment"], question: "哪些部分应做成模板，哪些允许配置，哪些不应进入一期？" },
-          { id: "wecom-demand-abstraction-f3", triggerLabel: "把搭建完成当作验收完成", requires: ["evidence", "reflection"], question: "怎样证明真实用户能完成原任务，而不只是成功创建了一张表？" },
+          { id: "wecom-demand-abstraction-f1", triggerLabel: "按用户原话直接堆功能", requires: ["problem", "context"], question: "谁在用？现在是怎么做的？最卡的是哪一步？" },
+          { id: "wecom-demand-abstraction-f2", triggerLabel: "方案过度定制或过度通用", requires: ["action", "judgment"], question: "如果一期只能解决一个问题，你先做什么？" },
+          { id: "wecom-demand-abstraction-f3", triggerLabel: "把搭建完成当作验收完成", requires: ["evidence", "reflection"], question: "上线后你怎么判断这个需求真的解决了？" },
         ],
         evaluationDimensions: [
           { name: "需求抽象", lookFor: "把口头诉求还原为业务对象、角色、状态和动作。" },
@@ -129,7 +174,7 @@ var MOCK_QUESTION_PACKS = [
         id: "wecom-competitive-differentiation",
         category: "产品判断",
         priority: 2,
-        question: "面对成熟的协作表格产品，企业微信智能表格应如何寻找可验证的差异化？",
+        question: "飞书多维表格、钉钉 AI 表格已经比较成熟了，你觉得企微的机会在哪？",
         keywords: ["目标场景", "原生协作", "迁移成本", "能力门槛", "竞争假设", "验证指标"],
         signalGroups: {
           problem: { label: "竞争问题", keywords: ["用户为何切换", "替代成本", "同质化"], required: true },
@@ -140,9 +185,9 @@ var MOCK_QUESTION_PACKS = [
           reflection: { label: "反例边界", keywords: ["优势不成立", "并存策略", "不强迫迁移"], required: true },
         },
         followUps: [
-          { id: "wecom-competitive-differentiation-f1", triggerLabel: "只比较功能数量", requires: ["problem", "judgment"], question: "如果双方都有相似功能，你会比较哪一条完整工作流来判断差异？" },
-          { id: "wecom-competitive-differentiation-f2", triggerLabel: "把入口或关系网络直接当作壁垒", requires: ["evidence", "reflection"], question: "什么证据能证明原生入口缩短了执行链路？什么结果会推翻你的判断？" },
-          { id: "wecom-competitive-differentiation-f3", triggerLabel: "默认用户会整体迁移", requires: ["context", "action"], question: "如果用户不会放弃现有工具，你会怎样设计导入、并存或局部迁移路径？" },
+          { id: "wecom-competitive-differentiation-f1", triggerLabel: "只比较功能数量", requires: ["problem", "judgment"], question: "如果功能都差不多，用户为什么要换？" },
+          { id: "wecom-competitive-differentiation-f2", triggerLabel: "把入口或关系网络直接当作壁垒", requires: ["evidence", "reflection"], question: "你怎么证明企微里的关系链真的能带来优势？" },
+          { id: "wecom-competitive-differentiation-f3", triggerLabel: "默认用户会整体迁移", requires: ["context", "action"], question: "如果用户不愿意放弃现在的工具，你会怎么办？" },
         ],
         evaluationDimensions: [
           { name: "竞争框架", lookFor: "比较场景、链路与结果，不做功能清单或品牌站队。" },
@@ -155,7 +200,7 @@ var MOCK_QUESTION_PACKS = [
         id: "wecom-ai-feature",
         category: "AI 产品设计",
         priority: 1,
-        question: "如果为企业微信智能表格设计一项 AI 能力，你会选择什么场景，为什么？",
+        question: "如果让你给智能表格加一个 AI 能力，你会先做什么？",
         keywords: ["窄场景", "用户任务", "结构化配置", "人机协作", "风险控制", "实验验证"],
         signalGroups: {
           problem: { label: "场景痛点", keywords: ["高频任务", "人工成本", "结果明确"], required: true },
@@ -166,9 +211,9 @@ var MOCK_QUESTION_PACKS = [
           reflection: { label: "风险边界", keywords: ["错误后果", "人工兜底", "回滚"], required: true },
         },
         followUps: [
-          { id: "wecom-ai-feature-f1", triggerLabel: "设计成泛化聊天框，缺少具体任务", requires: ["problem", "context"], question: "请把方案收窄到一个角色、一项高频任务和一个明确结果。" },
-          { id: "wecom-ai-feature-f2", triggerLabel: "一期范围过大或没有方案取舍", requires: ["action", "judgment"], question: "如果一期只能支持一种模板和一种动作，你保留什么，不做什么？" },
-          { id: "wecom-ai-feature-f3", triggerLabel: "默认 AI 可直接写入或外发", requires: ["evidence", "reflection"], question: "哪些动作可以自动执行，哪些必须预览确认？如何验证效率收益没有放大风险？" },
+          { id: "wecom-ai-feature-f1", triggerLabel: "设计成泛化聊天框，缺少具体任务", requires: ["problem", "context"], question: "这个需求是谁在什么环节遇到的？" },
+          { id: "wecom-ai-feature-f2", triggerLabel: "一期范围过大或没有方案取舍", requires: ["action", "judgment"], question: "一期只能做得很小，你会保留什么？" },
+          { id: "wecom-ai-feature-f3", triggerLabel: "默认 AI 可直接写入或外发", requires: ["evidence", "reflection"], question: "AI 做错了会怎样？哪些动作不能让它直接做？" },
         ],
         evaluationDimensions: [
           { name: "场景选择", lookFor: "选择高频、结果可判定且适合结构化数据的任务。" },
@@ -182,7 +227,7 @@ var MOCK_QUESTION_PACKS = [
         id: "wecom-ai-value",
         category: "指标与实验",
         priority: 1,
-        question: "如何判断智能表格中的一项 AI 能力产生了真实价值，而不是一次性尝鲜？",
+        question: "这个 AI 功能上线以后，你会看哪些数据判断它有没有用？",
         keywords: ["真实激活", "输出质量", "下游动作", "持续使用", "业务结果", "护栏指标"],
         signalGroups: {
           problem: { label: "价值问题", keywords: ["目标任务", "原流程基线", "用户成本"], required: true },
@@ -193,9 +238,9 @@ var MOCK_QUESTION_PACKS = [
           reflection: { label: "护栏复盘", keywords: ["严重错误", "延迟成本", "停止阈值"], required: true },
         },
         followUps: [
-          { id: "wecom-ai-value-f1", triggerLabel: "只看调用量、人数或采纳率", requires: ["problem", "evidence"], question: "采纳率很高时，为什么仍可能没有价值？你还会看哪些下游结果？" },
-          { id: "wecom-ai-value-f2", triggerLabel: "忽略任务周期或用户差异", requires: ["context", "judgment"], question: "低频但高价值的任务如何衡量，避免被日活指标误判？" },
-          { id: "wecom-ai-value-f3", triggerLabel: "没有因果验证与风险护栏", requires: ["action", "reflection"], question: "你会怎样设计对照，并设置质量、安全、时延和成本的停止条件？" },
+          { id: "wecom-ai-value-f1", triggerLabel: "只看调用量、人数或采纳率", requires: ["problem", "evidence"], question: "调用量很高，就一定说明有价值吗？" },
+          { id: "wecom-ai-value-f2", triggerLabel: "忽略任务周期或用户差异", requires: ["context", "judgment"], question: "如果这个任务本来就很低频，你怎么衡量？" },
+          { id: "wecom-ai-value-f3", triggerLabel: "没有因果验证与风险护栏", requires: ["action", "reflection"], question: "你怎么排除只是新鲜感或者用户本来就更积极？" },
         ],
         evaluationDimensions: [
           { name: "价值链条", lookFor: "从激活、质量、下游动作到持续结果逐层验证。" },
@@ -208,7 +253,7 @@ var MOCK_QUESTION_PACKS = [
         id: "wecom-cold-start",
         category: "增长与采用",
         priority: 1,
-        question: "企业智能表格产品应如何从零启动，并形成组织级持续采用？",
+        question: "这类企业产品如果从零开始，你会先从什么场景切？",
         keywords: ["窄场景", "种子用户", "首次闭环", "高接触验证", "产品化沉淀", "组织留存"],
         signalGroups: {
           problem: { label: "切入痛点", keywords: ["高频流程", "明确损失", "角色完整"], required: true },
@@ -219,9 +264,9 @@ var MOCK_QUESTION_PACKS = [
           reflection: { label: "失活诊断", keywords: ["旧流程并存", "配置负担", "激励错位"], required: false },
         },
         followUps: [
-          { id: "wecom-cold-start-f1", triggerLabel: "从万能空表或广泛获客开始", requires: ["problem", "context"], question: "第一批种子团队应满足哪些条件？为什么不是只找知名客户？" },
-          { id: "wecom-cold-start-f2", triggerLabel: "把开通、建表或导入当作激活", requires: ["action", "evidence"], question: "请定义一次包含搭建者、一线执行者和管理者的首次价值闭环。" },
-          { id: "wecom-cold-start-f3", triggerLabel: "长期依赖人工实施，缺少规模化路径", requires: ["judgment", "reflection"], question: "哪些陪跑工作应沉淀成模板、向导或迁移工具？何时不应继续产品化？" },
+          { id: "wecom-cold-start-f1", triggerLabel: "从万能空表或广泛获客开始", requires: ["problem", "context"], question: "第一批用户你会找谁？" },
+          { id: "wecom-cold-start-f2", triggerLabel: "把开通、建表或导入当作激活", requires: ["action", "evidence"], question: "用户做到哪一步，才算真的用起来了？" },
+          { id: "wecom-cold-start-f3", triggerLabel: "长期依赖人工实施，缺少规模化路径", requires: ["judgment", "reflection"], question: "前期可以靠人陪跑，后面怎么把它规模化？" },
         ],
         evaluationDimensions: [
           { name: "切入策略", lookFor: "从痛点强、角色清楚且能闭环的窄流程切入。" },
@@ -234,7 +279,7 @@ var MOCK_QUESTION_PACKS = [
         id: "wecom-prioritization",
         category: "产品规划",
         priority: 1,
-        question: "权限缺陷、导入失败、高频 AI 需求和界面优化同时出现时，你如何排优先级？",
+        question: "现在权限问题、导入失败、AI 新需求和界面优化同时来了，你怎么排？",
         keywords: ["信任底线", "用户价值", "影响范围", "证据置信度", "成本风险", "复盘"],
         signalGroups: {
           problem: { label: "问题分层", keywords: ["安全风险", "核心阻塞", "体验改善"], required: true },
@@ -245,9 +290,9 @@ var MOCK_QUESTION_PACKS = [
           reflection: { label: "结果复盘", keywords: ["复发率", "任务改善", "假设更新"], required: false },
         },
         followUps: [
-          { id: "wecom-prioritization-f1", triggerLabel: "机械套用评分公式", requires: ["problem", "judgment"], question: "为什么企业产品的权限与数据正确性不能和普通体验需求放在同一层简单打分？" },
-          { id: "wecom-prioritization-f2", triggerLabel: "只依赖单一声音或职位高低", requires: ["context", "evidence"], question: "行为数据、客户反馈和战略方向冲突时，你怎样判断各自代表什么？" },
-          { id: "wecom-prioritization-f3", triggerLabel: "没有落地和复盘机制", requires: ["action", "reflection"], question: "做出排序后，你如何管理并行项、说明取舍，并验证原判断是否正确？" },
+          { id: "wecom-prioritization-f1", triggerLabel: "机械套用评分公式", requires: ["problem", "judgment"], question: "你先讲原则，再讲这四个具体会怎么排。" },
+          { id: "wecom-prioritization-f2", triggerLabel: "只依赖单一声音或职位高低", requires: ["context", "evidence"], question: "如果老板最关心的和你的判断不一样，你怎么沟通？" },
+          { id: "wecom-prioritization-f3", triggerLabel: "没有落地和复盘机制", requires: ["action", "reflection"], question: "排完以后，你怎么知道当时的判断是对的？" },
         ],
         evaluationDimensions: [
           { name: "分层原则", lookFor: "先守权限、安全、数据正确和稳定性底线。" },
@@ -260,7 +305,7 @@ var MOCK_QUESTION_PACKS = [
         id: "wecom-ai-permissions",
         category: "安全与治理",
         priority: 1,
-        question: "智能表格中的 AI 应如何读取数据、生成结论并执行动作，才能不绕过权限体系？",
+        question: "如果 AI 能读表、改表，甚至自动发消息，你最担心什么？",
         keywords: ["最小权限", "取数裁剪", "动作校验", "敏感数据", "审计", "回滚"],
         signalGroups: {
           problem: { label: "风险识别", keywords: ["越权读取", "越权推断", "错误执行"], required: true },
@@ -271,9 +316,9 @@ var MOCK_QUESTION_PACKS = [
           reflection: { label: "对抗与恢复", keywords: ["恶意指令", "异常检测", "撤销回滚"], required: true },
         },
         followUps: [
-          { id: "wecom-ai-permissions-f1", triggerLabel: "只说沿用用户权限，没有说明取数阶段", requires: ["context", "action"], question: "用户只能看部分数据时，AI 应怎样取数、汇总并说明结果覆盖范围？" },
-          { id: "wecom-ai-permissions-f2", triggerLabel: "所有动作一律自动或一律确认", requires: ["judgment", "evidence"], question: "你如何按可逆性、影响范围和敏感程度划分自动执行与人工确认？" },
-          { id: "wecom-ai-permissions-f3", triggerLabel: "忽略输入攻击、审计或恢复", requires: ["problem", "reflection"], question: "导入内容包含恶意指令或错误批量操作时，系统如何隔离、发现并恢复？" },
+          { id: "wecom-ai-permissions-f1", triggerLabel: "只说沿用用户权限，没有说明取数阶段", requires: ["context", "action"], question: "用户只能看一部分数据时，AI 最后能总结到什么程度？" },
+          { id: "wecom-ai-permissions-f2", triggerLabel: "所有动作一律自动或一律确认", requires: ["judgment", "evidence"], question: "哪些动作可以自动做，哪些必须让人确认？" },
+          { id: "wecom-ai-permissions-f3", triggerLabel: "忽略输入攻击、审计或恢复", requires: ["problem", "reflection"], question: "如果它批量做错了，怎么发现、怎么撤回？" },
         ],
         evaluationDimensions: [
           { name: "权限模型", lookFor: "AI 可见范围是用户权限与任务授权的交集，且取数前裁剪。" },
@@ -286,7 +331,7 @@ var MOCK_QUESTION_PACKS = [
         id: "wecom-data-migration",
         category: "企业产品基础",
         priority: 2,
-        question: "如果用户的历史数据分散、字段混乱且权限不一致，你会如何设计导入与迁移体验？",
+        question: "用户历史数据很乱，权限也不一致，你会怎么设计迁移？",
         keywords: ["数据盘点", "字段映射", "质量校验", "权限继承", "试迁移", "回退"],
         signalGroups: {
           problem: { label: "迁移风险", keywords: ["数据丢失", "口径冲突", "业务中断"], required: true },
@@ -297,9 +342,9 @@ var MOCK_QUESTION_PACKS = [
           reflection: { label: "恢复与治理", keywords: ["回退", "持续同步", "数据责任人"], required: true },
         },
         followUps: [
-          { id: "wecom-data-migration-f1", triggerLabel: "只描述上传文件，没有数据盘点", requires: ["problem", "context"], question: "迁移前你需要了解哪些来源、口径、依赖和权限信息？" },
-          { id: "wecom-data-migration-f2", triggerLabel: "假设字段可以自动一一对应", requires: ["action", "judgment"], question: "遇到同名异义、类型冲突和缺失关联时，哪些可自动处理，哪些必须人工确认？" },
-          { id: "wecom-data-migration-f3", triggerLabel: "没有验收、失败恢复和并存计划", requires: ["evidence", "reflection"], question: "如何试迁移、核对结果并在失败时回退？新旧系统并存期间怎样避免双写混乱？" },
+          { id: "wecom-data-migration-f1", triggerLabel: "只描述上传文件，没有数据盘点", requires: ["problem", "context"], question: "迁移前你最先盘什么？" },
+          { id: "wecom-data-migration-f2", triggerLabel: "假设字段可以自动一一对应", requires: ["action", "judgment"], question: "哪些能自动处理，哪些必须让客户确认？" },
+          { id: "wecom-data-migration-f3", triggerLabel: "没有验收、失败恢复和并存计划", requires: ["evidence", "reflection"], question: "如果迁移中途失败了，怎么保证业务不受影响？" },
         ],
         evaluationDimensions: [
           { name: "风险完整性", lookFor: "识别数据、口径、权限、依赖与业务连续性风险。" },
@@ -312,7 +357,7 @@ var MOCK_QUESTION_PACKS = [
         id: "wecom-ai-evaluation",
         category: "AI 产品设计",
         priority: 1,
-        question: "你会如何为智能表格中的 AI 能力建立可持续的质量评测与迭代闭环？",
+        question: "一个 AI 功能上线前，你会怎么判断它够不够好？",
         keywords: ["任务分类", "评测集", "业务预期", "过程证据", "人工复核", "回归测试"],
         signalGroups: {
           problem: { label: "质量目标", keywords: ["任务成功", "严重错误", "用户影响"], required: true },
@@ -323,9 +368,9 @@ var MOCK_QUESTION_PACKS = [
           reflection: { label: "评测治理", keywords: ["样本漂移", "评审偏差", "版本追踪"], required: true },
         },
         followUps: [
-          { id: "wecom-ai-evaluation-f1", triggerLabel: "只说准备问题和标准答案", requires: ["problem", "context"], question: "一条评测样本除输入外，还需定义哪些预期、约束和风险信息？" },
-          { id: "wecom-ai-evaluation-f2", triggerLabel: "把自动打分当作最终裁判", requires: ["evidence", "judgment"], question: "哪些样本必须人工复核？自动评审与人工结论冲突时如何处理？" },
-          { id: "wecom-ai-evaluation-f3", triggerLabel: "评测止于跑分，没有回流迭代", requires: ["action", "reflection"], question: "坏样本如何完成归因、修复、相邻样本回归和评测集版本更新？" },
+          { id: "wecom-ai-evaluation-f1", triggerLabel: "只说准备问题和标准答案", requires: ["problem", "context"], question: "除了用户问题，一条评测样本里还要有什么？" },
+          { id: "wecom-ai-evaluation-f2", triggerLabel: "把自动打分当作最终裁判", requires: ["evidence", "judgment"], question: "自动评测和人工判断冲突了，听谁的？" },
+          { id: "wecom-ai-evaluation-f3", triggerLabel: "评测止于跑分，没有回流迭代", requires: ["action", "reflection"], question: "发现 Bad Case 以后，怎么保证不是只修这一条？" },
         ],
         evaluationDimensions: [
           { name: "评测设计", lookFor: "按任务与风险分层，定义可核验预期和边界样本。" },
@@ -338,7 +383,7 @@ var MOCK_QUESTION_PACKS = [
         id: "wecom-bad-case",
         category: "AI 产品设计",
         priority: 2,
-        question: "请讲一个已脱敏的 AI 产品坏样本，以及你如何定位并推动泛化修复。",
+        question: "讲一个你印象比较深的 Bad Case。你们最后是怎么定位的？",
         keywords: ["预期与实际", "可观察证据", "根因分层", "责任边界", "泛化修复", "回归"],
         signalGroups: {
           problem: { label: "失败定义", keywords: ["用户任务", "预期结果", "实际表现"], required: true },
@@ -349,9 +394,9 @@ var MOCK_QUESTION_PACKS = [
           reflection: { label: "泛化学习", keywords: ["机制修复", "防止补丁", "监控更新"], required: true },
         },
         followUps: [
-          { id: "wecom-bad-case-f1", triggerLabel: "只描述错误结果，缺少完整发生条件", requires: ["problem", "context"], question: "请还原预期、实际表现、输入条件和影响范围，但不要披露敏感数据。" },
-          { id: "wecom-bad-case-f2", triggerLabel: "直接断言模型错误，没有核验预期与证据", requires: ["evidence", "judgment"], question: "你如何排除评测预期过期、需求有歧义或产品边界未说明？" },
-          { id: "wecom-bad-case-f3", triggerLabel: "修复只针对单条输入打补丁", requires: ["action", "reflection"], question: "怎样证明修复覆盖了一类机制问题，且没有让相邻能力退化？" },
+          { id: "wecom-bad-case-f1", triggerLabel: "只描述错误结果，缺少完整发生条件", requires: ["problem", "context"], question: "当时预期是什么，实际错在了哪里？" },
+          { id: "wecom-bad-case-f2", triggerLabel: "直接断言模型错误，没有核验预期与证据", requires: ["evidence", "judgment"], question: "你怎么确定是系统的问题，不是评测标准本身有问题？" },
+          { id: "wecom-bad-case-f3", triggerLabel: "修复只针对单条输入打补丁", requires: ["action", "reflection"], question: "修完以后，你们怎么确认同类问题不会再出现？" },
         ],
         evaluationDimensions: [
           { name: "案例完整性", lookFor: "脱敏说明预期、实际、条件、影响与证据。" },
@@ -364,7 +409,7 @@ var MOCK_QUESTION_PACKS = [
         id: "wecom-cross-team-launch",
         category: "协作与推进",
         priority: 2,
-        question: "请用一个已脱敏的案例说明，你如何推动多角色参与的企业产品功能上线。",
+        question: "讲一个你跨团队推进上线的项目。",
         keywords: ["共同目标", "责任人", "口径对齐", "里程碑", "范围取舍", "业务验收"],
         signalGroups: {
           problem: { label: "协作难题", keywords: ["目标冲突", "依赖阻塞", "决策缺口"], required: true },
@@ -375,9 +420,9 @@ var MOCK_QUESTION_PACKS = [
           reflection: { label: "协作复盘", keywords: ["机制不足", "后续改进", "责任边界"], required: true },
         },
         followUps: [
-          { id: "wecom-cross-team-launch-f1", triggerLabel: "只说沟通和催进度", requires: ["problem", "action"], question: "你如何把目标、范围、责任人和验收样例变成各方共同依据？" },
-          { id: "wecom-cross-team-launch-f2", triggerLabel: "没有呈现真实冲突或决策过程", requires: ["context", "judgment"], question: "请讲一个具体分歧：它属于事实、专业判断还是资源优先级，最终由谁决定？" },
-          { id: "wecom-cross-team-launch-f3", triggerLabel: "只强调按时上线，没有质量与复盘", requires: ["evidence", "reflection"], question: "如果确定会延期，你如何提供范围、时间和风险方案，并保护验收底线？" },
+          { id: "wecom-cross-team-launch-f1", triggerLabel: "只说沟通和催进度", requires: ["problem", "action"], question: "这个项目最难推进的点是什么？你具体做了什么？" },
+          { id: "wecom-cross-team-launch-f2", triggerLabel: "没有呈现真实冲突或决策过程", requires: ["context", "judgment"], question: "中间最大的分歧是什么？最后谁做的决定？" },
+          { id: "wecom-cross-team-launch-f3", triggerLabel: "只强调按时上线，没有质量与复盘", requires: ["evidence", "reflection"], question: "如果当时确定会延期，你会怎么处理？" },
         ],
         evaluationDimensions: [
           { name: "协作结构化", lookFor: "把口头共识落成范围、责任、节点、样例和验收规则。" },
@@ -390,7 +435,7 @@ var MOCK_QUESTION_PACKS = [
         id: "wecom-failure-reflection",
         category: "行为与复盘",
         priority: 3,
-        question: "请讲一次你在产品判断或项目推进中做错的事情，以及后来如何改变工作机制。",
+        question: "讲一次你做错判断的经历。",
         keywords: ["本人判断", "实际影响", "根因", "机制改进", "预防措施", "迁移学习"],
         signalGroups: {
           problem: { label: "错误判断", keywords: ["本人责任", "错误假设", "关键遗漏"], required: true },
@@ -401,9 +446,9 @@ var MOCK_QUESTION_PACKS = [
           reflection: { label: "迁移学习", keywords: ["预防机制", "升级阈值", "新决策原则"], required: true },
         },
         followUps: [
-          { id: "wecom-failure-reflection-f1", triggerLabel: "把问题归因于环境或他人", requires: ["problem", "judgment"], question: "其中哪一个关键判断由你做出，为什么当时会判断错误？" },
-          { id: "wecom-failure-reflection-f2", triggerLabel: "没有说明实际影响和补救", requires: ["context", "action"], question: "这件事对用户、协作方或进度造成了什么影响？你先做了什么止损？" },
-          { id: "wecom-failure-reflection-f3", triggerLabel: "改进停留在更细心或多沟通", requires: ["evidence", "reflection"], question: "后来具体改变了哪些规则、阈值或验收机制？如何证明变化有效？" },
+          { id: "wecom-failure-reflection-f1", triggerLabel: "把问题归因于环境或他人", requires: ["problem", "judgment"], question: "当时哪个判断是你做的？为什么会判断错？" },
+          { id: "wecom-failure-reflection-f2", triggerLabel: "没有说明实际影响和补救", requires: ["context", "action"], question: "造成了什么影响？你当时先做了什么？" },
+          { id: "wecom-failure-reflection-f3", triggerLabel: "改进停留在更细心或多沟通", requires: ["evidence", "reflection"], question: "这件事之后，你具体改了什么做法？" },
         ],
         evaluationDimensions: [
           { name: "责任承担", lookFor: "明确本人错误，不甩锅也不替团队承担全部责任。" },
@@ -416,7 +461,7 @@ var MOCK_QUESTION_PACKS = [
         id: "wecom-disagreement",
         category: "行为与复盘",
         priority: 3,
-        question: "请讲一次你与业务、设计或技术同学意见不一致的经历。",
+        question: "讲一次你和业务、设计或者研发意见不一致的经历。",
         keywords: ["换位理解", "争议拆解", "证据收敛", "决策边界", "结果处理", "可修正性"],
         signalGroups: {
           problem: { label: "分歧核心", keywords: ["目标差异", "方案冲突", "资源矛盾"], required: true },
@@ -427,9 +472,9 @@ var MOCK_QUESTION_PACKS = [
           reflection: { label: "结果复盘", keywords: ["判断修正", "相邻影响", "协作改进"], required: true },
         },
         followUps: [
-          { id: "wecom-disagreement-f1", triggerLabel: "把对方描述为被说服的阻力", requires: ["problem", "context"], question: "请公平复述对方最合理的顾虑，以及你当时为何没有直接接受。" },
-          { id: "wecom-disagreement-f2", triggerLabel: "只靠表达技巧或职位拍板", requires: ["action", "evidence"], question: "你用了哪些事实、样例或小范围验证来缩小分歧？" },
-          { id: "wecom-disagreement-f3", triggerLabel: "没有说明决策归属与纠错方式", requires: ["judgment", "reflection"], question: "谁应对最终决策负责？如果后来证明你的判断错了，你会怎样处理？" },
+          { id: "wecom-disagreement-f1", triggerLabel: "把对方描述为被说服的阻力", requires: ["problem", "context"], question: "对方当时最合理的顾虑是什么？" },
+          { id: "wecom-disagreement-f2", triggerLabel: "只靠表达技巧或职位拍板", requires: ["action", "evidence"], question: "你们最后是靠什么把分歧收敛下来的？" },
+          { id: "wecom-disagreement-f3", triggerLabel: "没有说明决策归属与纠错方式", requires: ["judgment", "reflection"], question: "如果后来证明你错了，你会怎么处理？" },
         ],
         evaluationDimensions: [
           { name: "换位理解", lookFor: "准确呈现不同角色的目标、约束和合理顾虑。" },
