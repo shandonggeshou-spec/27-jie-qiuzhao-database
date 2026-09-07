@@ -138,6 +138,10 @@
     return PACKS.find(function (pack) { return pack && pack.id === id; }) || null;
   }
 
+  function sessionPackAvailable(session) {
+    return Boolean(session && getPack(session.rolePack || session.questionPack));
+  }
+
   function sessionTitle(session) {
     var pack = session && getPack(session.rolePack);
     return session && (session.packTitle || session.packName || session.title) || pack && pack.title || "模拟面试";
@@ -775,6 +779,11 @@
       await openReport(session);
       return;
     }
+    if (!sessionPackAvailable(session)) {
+      showRoute("history");
+      showToast("该题包已下线，旧回答仍可导出或删除。");
+      return;
+    }
     var plan = planFor(session);
     if (!plan || !Array.isArray(plan.questions) || !plan.questions.length) throw new Error("这场面试缺少可恢复的题目快照。");
     if (!session.plan) session = await Storage.updateSession(session.id, { plan: plan, questionsSnapshot: clone(plan.questions) });
@@ -901,7 +910,9 @@
 
   async function refreshResumePanel() {
     var sessions = await Storage.listSessions();
-    state.resumeSession = sessions.find(function (session) { return !completed(session); }) || null;
+    state.resumeSession = sessions.find(function (session) {
+      return !completed(session) && sessionPackAvailable(session);
+    }) || null;
     el.resumeSessionPanel.hidden = !state.resumeSession;
     if (!state.resumeSession) return;
     var turns = await Storage.getTurns(state.resumeSession.id);
@@ -1247,10 +1258,12 @@
       var turns = state.historyTurns[session.id] || [];
       var progress = progressFor(session, turns);
       var isComplete = completed(session);
+      var isRetired = !sessionPackAvailable(session);
       var row = node("article", "session-row" + (isComplete ? "" : " is-incomplete"));
       row.dataset.sessionId = session.id;
       var main = node("div", "session-main");
-      add(main, "span", "session-state" + (isComplete ? " is-complete" : ""), isComplete ? "已完成" : "未完成");
+      add(main, "span", "session-state" + (isComplete ? " is-complete" : ""),
+        isComplete ? "已完成" : isRetired ? "旧版已下线" : "未完成");
       add(main, "h3", "", sessionTitle(session));
       var meta = node("p");
       var time = add(meta, "time", "", relativeDate(session.updatedAt));
@@ -1288,12 +1301,18 @@
         exportButton.dataset.action = "export";
         exportButton.dataset.sessionId = session.id;
         actions.appendChild(exportButton);
-      } else {
+      } else if (!isRetired) {
         var continueButton = node("button", "button button-primary button-small continue-session-btn", "继续回答");
         continueButton.type = "button";
         continueButton.dataset.action = "continue";
         continueButton.dataset.sessionId = session.id;
         actions.appendChild(continueButton);
+      } else {
+        var retiredExportButton = node("button", "text-button export-session-btn", "导出旧回答");
+        retiredExportButton.type = "button";
+        retiredExportButton.dataset.action = "export";
+        retiredExportButton.dataset.sessionId = session.id;
+        actions.appendChild(retiredExportButton);
       }
       var deleteButton = node("button", "menu-button delete-session-btn", "删除");
       deleteButton.type = "button";
